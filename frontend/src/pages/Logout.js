@@ -13,7 +13,7 @@ const Logout = () => {
 
     const handleLogout = () => {
         dispatch(authLogout());
-        navigate('/');
+      navigate('/choose', { replace: true });
     };
 
     const handleCancel = () => {

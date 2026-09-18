@@ -6,6 +6,7 @@ import { LoadingState } from './components/StateViews';
 
 const Homepage = lazy(() => import('./pages/Homepage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const SuperAdminPortal = lazy(() => import('./pages/admin/SuperAdminPortal'));
 const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'));
 const TeacherDashboard = lazy(() => import('./pages/teacher/TeacherDashboard'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -81,13 +82,18 @@ const App = () => {
           authorised server side.
         */}
         <Route path="/admin/*" element={
-          <RequireRole roles={['Admin', 'SuperAdmin', 'Accountant', 'HR']} loginPath="/choose">
+          <RequireRole roles={['Admin', 'Accountant', 'HR']} loginPath="/choose">
             <AdminDashboard basePath="/admin" />
           </RequireRole>
         } />
         <Route path="/Admin/*" element={
-          <RequireRole roles={['Admin', 'SuperAdmin', 'Accountant', 'HR']} loginPath="/choose">
+          <RequireRole roles={['Admin', 'Accountant', 'HR']} loginPath="/choose">
             <AdminDashboard basePath="/Admin" />
+          </RequireRole>
+        } />
+        <Route path="/SuperAdmin/*" element={
+          <RequireRole roles={['SuperAdmin']} loginPath="/SuperAdminlogin">
+            <SuperAdminPortal />
           </RequireRole>
         } />
         <Route path="/Accountant/*" element={

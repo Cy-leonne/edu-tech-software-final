@@ -153,7 +153,8 @@ const LoginPage = ({ role }) => {
     };
 
     const getPortalPath = (userRole) => {
-        if (userRole === 'SuperAdmin' || userRole === 'Admin') return '/Admin/dashboard';
+        if (userRole === 'SuperAdmin') return '/SuperAdmin/dashboard';
+        if (userRole === 'Admin') return '/Admin/dashboard';
         if (userRole === 'Teacher') return '/Teacher/dashboard';
         if (userRole === 'Student') return '/Student/dashboard';
         if (userRole === 'Accountant') return '/Accountant';

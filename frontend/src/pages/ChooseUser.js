@@ -102,7 +102,7 @@ const ChooseUser = ({ visitor }) => {
   useEffect(() => {
     if (status === 'success') {
       if (currentRole === 'Admin' || currentRole === 'SuperAdmin') {
-        navigate('/Admin/dashboard');
+        navigate(currentRole === 'SuperAdmin' ? '/SuperAdmin/dashboard' : '/Admin/dashboard');
       }
       else if (currentRole === 'Student') {
         navigate('/Student/dashboard');

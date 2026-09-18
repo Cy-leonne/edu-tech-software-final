@@ -19,6 +19,7 @@ import {
     Tabs,
     Tab,
     Chip,
+    Snackbar,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
@@ -75,6 +76,7 @@ const SuperAdminDashboard = () => {
             const headers = adminId ? { 'x-admin-id': adminId } : {};
             const response = await axios.get(`${API_BASE_URL}/Admin/RegisteredSchools`, { headers });
             setRegisteredSchools(response.data || []);
+            setError('');
         } catch (err) {
             console.error('Failed to fetch registered schools', err);
             setError('Failed to load registered schools');
@@ -85,11 +87,26 @@ const SuperAdminDashboard = () => {
         try {
             const adminId = getAdminId();
             const headers = adminId ? { 'x-admin-id': adminId } : {};
-            const response = await axios.get(`${API_BASE_URL}/Admin/PendingSchools`, { headers });
+            const response = await axios.get(`${API_BASE_URL}/Admin/Pending`, { headers });
             setPendingSchools(response.data || []);
+            setError('');
         } catch (err) {
             console.error('Failed to fetch pending schools', err);
             setError('Failed to load pending schools');
+        }
+    };
+
+    const handleApproval = async (schoolId, approved) => {
+        try {
+            setError('');
+            const adminId = getAdminId();
+            const headers = adminId ? { 'x-admin-id': adminId } : {};
+            const endpoint = `${API_BASE_URL}/Admin/${approved ? 'Approve' : 'Decline'}/${schoolId}`;
+            await axios.put(endpoint, approved ? {} : { reason: 'Registration declined by SuperAdmin' }, { headers });
+            setSuccess(approved ? 'School approved successfully.' : 'School registration declined.');
+            await Promise.all([fetchPendingSchools(), fetchRegisteredSchools(), fetchStats()]);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to update school approval status');
         }
     };
 
@@ -164,8 +181,26 @@ const SuperAdminDashboard = () => {
                 🔐 SuperAdmin Dashboard
             </Typography>
 
-            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-            {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+            <Snackbar
+                open={Boolean(error)}
+                autoHideDuration={5000}
+                onClose={() => setError('')}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+                <Alert onClose={() => setError('')} severity="error" variant="filled">
+                    {error}
+                </Alert>
+            </Snackbar>
+            <Snackbar
+                open={Boolean(success)}
+                autoHideDuration={4000}
+                onClose={() => setSuccess('')}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+                <Alert onClose={() => setSuccess('')} severity="success" variant="filled">
+                    {success}
+                </Alert>
+            </Snackbar>
 
             {/* Statistics Cards */}
             {stats && (
@@ -326,6 +361,7 @@ const SuperAdminDashboard = () => {
                                             <TableCell><strong>Contact Name</strong></TableCell>
                                             <TableCell><strong>Email</strong></TableCell>
                                             <TableCell><strong>Registration Date</strong></TableCell>
+                                            <TableCell><strong>Actions</strong></TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -336,6 +372,14 @@ const SuperAdminDashboard = () => {
                                                 <TableCell>{school.email}</TableCell>
                                                 <TableCell>
                                                     {school.createdAt ? new Date(school.createdAt).toLocaleDateString() : '—'}
+                                                </TableCell>
+                                                <TableCell sx={{ display: 'flex', gap: 1 }}>
+                                                    <Button size="small" variant="contained" color="success" onClick={() => handleApproval(school._id, true)}>
+                                                        Approve
+                                                    </Button>
+                                                    <Button size="small" variant="outlined" color="error" onClick={() => handleApproval(school._id, false)}>
+                                                        Decline
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ))}

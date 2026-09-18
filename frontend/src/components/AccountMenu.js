@@ -15,7 +15,11 @@ const AccountMenu = () => {
 
     // Keep the account links inside whichever admin prefix the user is on
     // (/admin or the legacy /Admin) so navigation does not jump between them.
-    const adminBasePath = location.pathname.startsWith('/admin') ? '/admin' : '/Admin';
+    const adminBasePath = location.pathname.startsWith('/SuperAdmin')
+        ? '/SuperAdmin'
+        : location.pathname.startsWith('/admin')
+            ? '/admin'
+            : '/Admin';
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);

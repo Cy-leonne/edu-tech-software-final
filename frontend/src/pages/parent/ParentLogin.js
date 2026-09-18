@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -7,7 +9,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const defaultTheme = createTheme();
 

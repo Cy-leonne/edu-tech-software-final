@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const reportSettingsSchema = new mongoose.Schema({

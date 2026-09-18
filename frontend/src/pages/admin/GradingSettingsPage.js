@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -10,7 +12,6 @@ const GradingSettingsPage = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
   useEffect(() => {
     if (currentUser?._id) {

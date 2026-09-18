@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const Admin = require('../models/adminSchema.js');
 const Teacher = require('../models/teacherSchema.js');

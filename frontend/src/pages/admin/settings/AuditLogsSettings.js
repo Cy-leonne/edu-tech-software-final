@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import {
@@ -20,7 +22,6 @@ import {
   Typography,
 } from '@mui/material';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const getCurrentUser = () => {
   try {

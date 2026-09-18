@@ -1,3 +1,4 @@
+
 const Notice = require('../models/noticeSchema.js');
 const { getAdminIdFromReq, verifySchoolId, verifyEntityBelongsToAdminSchool } = require('../middleware/schoolAccess.js');
 

@@ -1,3 +1,4 @@
+
 /**
  * Helpers for safely embedding user supplied text into database queries.
  *

@@ -1,3 +1,4 @@
+
 const applyClassFeeToStudent = (student = {}, classFeeAmount = 0) => {
   const carriedForwardBalance = Number(student.carriedForwardBalance || 0);
   const totalFees = Number(classFeeAmount || 0) + carriedForwardBalance;

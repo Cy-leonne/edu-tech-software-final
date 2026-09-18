@@ -1,8 +1,9 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Box, Button, MenuItem, Paper, TextField, Typography, Alert } from '@mui/material';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const TeacherUploadMaterials = () => {
     const { currentUser } = useSelector((state) => state.user);

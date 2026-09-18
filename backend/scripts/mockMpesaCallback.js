@@ -1,3 +1,4 @@
+
 /*
   Mock M-Pesa callback sender
   Usage: node scripts/mockMpesaCallback.js --checkout=<checkoutRequestId> --result=0 --receipt=ABC123 --date=20240722123045

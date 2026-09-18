@@ -1,3 +1,4 @@
+
 const mockAdminFindOne = jest.fn();
 const mockAdminSave = jest.fn();
 const mockBcryptCompare = jest.fn();
@@ -108,7 +109,7 @@ describe('adminLogIn', () => {
     };
 
     mockAdminFindOne.mockImplementation((query) => {
-      if (query.email && query.email.$regex) {
+      if (query.$or?.some((condition) => condition.email?.$regex)) {
         return Promise.resolve(adminDoc);
       }
       return Promise.resolve(null);
@@ -130,6 +131,45 @@ describe('adminLogIn', () => {
 
     expect(res.send).toHaveBeenCalledWith(
       expect.objectContaining({ email: 'Admin@Example.com', role: 'Admin' })
+    );
+  });
+
+  test('logs in successfully when the stored email has surrounding whitespace', async () => {
+    const adminDoc = {
+      _id: 'admin-2',
+      name: 'Whitespace Admin',
+      email: '  raphaelkasana761@gmail.com  ',
+      role: 'Admin',
+      approved: true,
+      password: 'hashed-password',
+      save: mockAdminSave.mockResolvedValue(true),
+      failedLoginAttempts: 0,
+      lockoutUntil: null,
+    };
+
+    mockAdminFindOne.mockImplementation((query) => {
+      if (query.$or?.some((condition) => condition.$expr)) {
+        return Promise.resolve(adminDoc);
+      }
+      return Promise.resolve(null);
+    });
+
+    const req = {
+      body: { email: 'raphaelkasana761@gmail.com', password: 'password' },
+      path: '/AdminLogin',
+      ip: '127.0.0.1',
+      connection: { remoteAddress: '127.0.0.1' },
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+      json: jest.fn(),
+    };
+
+    await adminLogIn(req, res);
+
+    expect(res.send).toHaveBeenCalledWith(
+      expect.objectContaining({ email: '  raphaelkasana761@gmail.com  ', role: 'Admin' })
     );
   });
 });

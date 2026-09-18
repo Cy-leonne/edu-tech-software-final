@@ -1,3 +1,4 @@
+
 import { Paper, TextField, Typography, Grid, Alert } from '@mui/material';
 
 const ERPIntegrationDetails = ({ bankIntegration, erpIntegration, onChange }) => {

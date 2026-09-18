@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
@@ -226,7 +228,7 @@ const ViewStudent = () => {
 
         setApprovingPaymentIndex(paymentIndex);
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BASE_URL || 'http://localhost:5000'}/Student/VerifyPayment`, {
+            const response = await axios.post(`${API_BASE_URL}/Student/VerifyPayment`, {
                 studentId: studentID,
                 paymentIndex,
                 verifiedBy: currentUser?._id || currentUser?.email || 'principal'
@@ -763,7 +765,7 @@ const ViewStudent = () => {
                         onClick={async () => {
                             setNotifyLoading(true);
                             try {
-                                const res = await axios.post(`${process.env.REACT_APP_BASE_URL}/Student/NotifyParent/${studentID}`, {
+                                const res = await axios.post(`${API_BASE_URL}/Student/NotifyParent/${studentID}`, {
                                     message: notifyMessage,
                                     subject: 'Message from School',
                                     via: notifyVia,

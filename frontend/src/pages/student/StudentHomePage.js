@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import React, { useEffect, useState } from 'react'
 import { Container, Grid, Paper, Typography, Button } from '@mui/material'
 import { Link } from 'react-router-dom';
@@ -12,7 +14,6 @@ import Subject from "../../assets/subjects.svg";
 import Assignment from "../../assets/assignment.svg";
 import { getSubjectList } from '../../redux/sclassRelated/sclassHandle';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const StudentHomePage = () => {
     const dispatch = useDispatch();

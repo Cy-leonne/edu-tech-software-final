@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const Parent = require('../models/parentSchema');
@@ -7,6 +8,21 @@ const Admin = require('../models/adminSchema');
 const { verifyEntityBelongsToAdminSchool, getAdminIdFromReq } = require('../middleware/schoolAccess');
 const { initiateStkPush, queryStkPushStatus, validateCallback } = require('../services/mpesaService');
 const { logAuditAction } = require('../utils/auditLogger');
+const { decryptSettingsSecrets } = require('../utils/settingsSecrets');
+
+/**
+ * Returns the school's M-Pesa settings with credential fields decrypted with
+ * the application encryption key, or undefined when the school has M-Pesa
+ * disabled / unconfigured (callers then fall back to the process-level
+ * environment credentials).
+ */
+const resolveMpesaCredentials = (settingsDoc) => {
+    const raw = settingsDoc?.mpesaSettings;
+    if (!raw) return undefined;
+    const plain = raw.toObject ? raw.toObject() : raw;
+    const decrypted = decryptSettingsSecrets({ mpesaSettings: plain });
+    return decrypted.mpesaSettings;
+};
 
 const MIN_PAYMENT_AMOUNT = 1;
 const MAX_PAYMENT_AMOUNT = 100000000;
@@ -377,17 +393,17 @@ const initiateStk = async (req, res) => {
         }
 
         const schoolSettings = await Settings.findOne({ school: student.school }).select('mpesaSettings');
-        const mpesaSettings = schoolSettings?.mpesaSettings;
+        const mpesaSettings = resolveMpesaCredentials(schoolSettings);
         if (mpesaSettings?.enabled && (!mpesaSettings.consumerKey || !mpesaSettings.consumerSecret || !mpesaSettings.businessShortCode || !mpesaSettings.passkey)) {
             return res.status(400).send({ message: 'M-Pesa is enabled but its school credentials are incomplete.' });
         }
-        // Initiate STK Push
+        // Initiate STK Push (per school credentials override the process defaults).
         const stkResult = await initiateStkPush(
             phoneNumber,
             amount,
             `${student.admissionNo}-${studentId}`,
             `School Fee Payment - ${student.name}`,
-            mpesaSettings?.enabled ? mpesaSettings.toObject() : undefined
+            mpesaSettings?.enabled ? mpesaSettings : undefined
         );
 
         if (!stkResult.success) {
@@ -527,10 +543,10 @@ const checkStkStatus = async (req, res) => {
         }
 
         const schoolSettings = await Settings.findOne({ school: student.school }).select('mpesaSettings');
-        const mpesaSettings = schoolSettings?.mpesaSettings;
+        const mpesaSettings = resolveMpesaCredentials(schoolSettings);
         const statusResult = await queryStkPushStatus(
             checkoutRequestId,
-            mpesaSettings?.enabled ? mpesaSettings.toObject() : undefined
+            mpesaSettings?.enabled ? mpesaSettings : undefined
         );
 
         if (!statusResult.success) {

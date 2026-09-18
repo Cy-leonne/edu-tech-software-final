@@ -1,9 +1,10 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { Box, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert } from '@mui/material';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const TeacherTimetable = () => {
     const { currentUser } = useSelector((state) => state.user);

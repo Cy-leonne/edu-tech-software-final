@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const liveClassSchema = new mongoose.Schema({

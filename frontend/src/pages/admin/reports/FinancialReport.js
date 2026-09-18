@@ -1,10 +1,11 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, CircularProgress, Grid, MenuItem, Paper, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Tabs, Tab } from '@mui/material';
 import { buildPrintBrandingHtml, getSchoolBranding, printBrandingStyles } from '../../../utils/printBranding';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const FinancialReport = () => {
     const { currentUser } = useSelector((state) => state.user);

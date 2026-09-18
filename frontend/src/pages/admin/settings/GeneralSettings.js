@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import { useState, useEffect } from 'react';
 import { Box, Paper, TextField, Button, Typography, Switch, FormControlLabel, Grid, Alert } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
@@ -40,7 +42,6 @@ const GeneralSettings = () => {
 
   const fetchSettings = async () => {
     try {
-      const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
       const schoolId = currentUser?.school?._id || currentUser?.school || currentUser?.schoolId;
       const response = await axios.get(`${API_BASE_URL}/Settings/School/${schoolId}/SystemSettings`, {
         headers: { 'x-admin-id': currentUser?._id }
@@ -110,7 +111,6 @@ const GeneralSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
       const schoolId = currentUser?.school?._id || currentUser?.school || currentUser?.schoolId;
       const payload = {
         ...settings,

@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -5,7 +7,6 @@ import axios from 'axios';
 import { CircularProgress, Button, TextField, Box, Typography } from '@mui/material';
 import Popup from '../../../components/Popup';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const AddHR = () => {
     const navigate = useNavigate();

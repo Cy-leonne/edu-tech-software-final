@@ -1,3 +1,4 @@
+
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
@@ -24,6 +25,7 @@ const {
     validateNewPassword,
 } = require('../utils/passwordReset.js');
 const { sanitizeSearchTerm } = require('../utils/searchUtils.js');
+const { encryptSettingsSecrets, redactSettingsSecrets, mergeSettingsUpdates } = require('../utils/settingsSecrets.js');
 
 const getFallbackAdmin = (identifier) => {
     // SECURITY: the in-memory demo database holds well known demo credentials.
@@ -43,7 +45,17 @@ const getFallbackAdmin = (identifier) => {
 };
 
 const buildCaseInsensitiveEmailQuery = (email) => ({
-    email: { $regex: `^${sanitizeSearchTerm(email)}$`, $options: 'i' }
+    $or: [
+        { email: { $regex: `^${sanitizeSearchTerm(email)}$`, $options: 'i' } },
+        {
+            $expr: {
+                $eq: [
+                    { $toLower: { $trim: { input: '$email' } } },
+                    email,
+                ],
+            },
+        },
+    ],
 });
 
 const getFallbackAdmins = (query = {}) => {
@@ -1084,9 +1096,12 @@ const getAdminSettings = async (req, res) => {
             await settings.save();
         }
 
+        // Never return real per-school credentials to the browser.
+        const safeSettings = redactSettingsSecrets(settings.toObject ? settings.toObject() : settings);
+
         res.status(200).json({
             message: 'Settings retrieved successfully',
-            settings
+            settings: safeSettings
         });
     } catch (err) {
         res.status(500).json({ message: 'Error retrieving settings', error: err.message });
@@ -1122,24 +1137,35 @@ const updateAdminSettings = async (req, res) => {
             settings = new Settings({ school: id });
         }
 
-        // Update settings with the provided data
-        Object.keys(updates).forEach(key => {
+        // Update settings with the provided data. Credential fields echoed back
+        // as redaction masks / empty strings keep their stored secrets.
+        const merged = mergeSettingsUpdates(settings.toObject(), updates);
+        Object.keys(merged).forEach(key => {
             if (key in settings) {
-                if (typeof updates[key] === 'object' && !Array.isArray(updates[key])) {
-                    settings[key] = { ...settings[key], ...updates[key] };
+                if (typeof merged[key] === 'object' && !Array.isArray(merged[key])) {
+                    settings[key] = { ...settings[key], ...merged[key] };
                 } else {
-                    settings[key] = updates[key];
+                    settings[key] = merged[key];
                 }
             }
         });
+
+        // Encrypt per-school credentials at rest (M-Pesa / SMS / email / bank
+        // keys). Redacted ('••••••••') values sent back by a client are ignored
+        // so a form submit can never overwrite a stored secret with masks, and
+        // the '__CLEAR__' sentinel removes a secret.
+        const encrypted = encryptSettingsSecrets(settings.toObject ? settings.toObject() : settings);
+        settings.set(encrypted);
 
         settings.updatedBy = adminId;
         settings.updatedAt = new Date();
         await settings.save();
 
+        const safeSettings = redactSettingsSecrets(settings.toObject ? settings.toObject() : settings);
+
         res.status(200).json({
             message: 'Settings updated successfully',
-            settings
+            settings: safeSettings
         });
     } catch (err) {
         res.status(500).json({ message: 'Error updating settings', error: err.message });

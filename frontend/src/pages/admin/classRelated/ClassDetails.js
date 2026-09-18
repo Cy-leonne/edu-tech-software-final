@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom'
@@ -39,7 +41,6 @@ const ClassDetails = () => {
     const [saveError, setSaveError] = useState('');
     const [saveSuccess, setSaveSuccess] = useState('');
 
-    const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
     const fetchTimetable = async () => {
         if (!classID || !currentUser?._id) return;

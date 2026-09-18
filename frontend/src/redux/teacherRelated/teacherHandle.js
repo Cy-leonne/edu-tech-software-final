@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import axios from 'axios';
 import {
     getRequest,
@@ -8,7 +10,6 @@ import {
     doneSuccess
 } from './teacherSlice';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 export const getAllTeachers = (id, email) => async (dispatch) => {
     dispatch(getRequest());
@@ -54,7 +55,7 @@ export const updateTeachSubject = (teacherId, teachSubject, teachSubjects = []) 
             teachSubjects: Array.isArray(teachSubjects) ? teachSubjects : [teachSubject].filter(Boolean)
         };
 
-        await axios.put(`${process.env.REACT_APP_BASE_URL}/TeacherSubject`, payload, {
+        await axios.put(`${API_BASE_URL}/TeacherSubject`, payload, {
             headers: { 'Content-Type': 'application/json' },
         });
         dispatch(postDone());
@@ -67,7 +68,7 @@ export const updateTeacherDetails = (teacherId, updateData) => async (dispatch) 
     dispatch(getRequest());
 
     try {
-        const result = await axios.put(`${process.env.REACT_APP_BASE_URL}/Teacher/${teacherId}`, updateData, {
+        const result = await axios.put(`${API_BASE_URL}/Teacher/${teacherId}`, updateData, {
             headers: { 'Content-Type': 'application/json' },
         });
         dispatch(doneSuccess(result.data));
@@ -82,7 +83,7 @@ export const updateTeacherRole = (teacherId, role) => async (dispatch) => {
     dispatch(getRequest());
 
     try {
-        const result = await axios.put(`${process.env.REACT_APP_BASE_URL}/TeacherRole`, { teacherId, role }, {
+        const result = await axios.put(`${API_BASE_URL}/TeacherRole`, { teacherId, role }, {
             headers: { 'Content-Type': 'application/json' },
         });
         dispatch(doneSuccess(result.data));
@@ -99,7 +100,7 @@ export const resetTeacherPasswordByAdmin = (teacherId, newPassword) => async (di
         const headers = { 'Content-Type': 'application/json' };
         if (adminId) headers['x-admin-id'] = adminId;
 
-        const result = await axios.post(`${process.env.REACT_APP_BASE_URL}/Teacher/${teacherId}/ResetByAdmin`, { newPassword }, { headers });
+        const result = await axios.post(`${API_BASE_URL}/Teacher/${teacherId}/ResetByAdmin`, { newPassword }, { headers });
         dispatch(doneSuccess(result.data));
         return result.data;
     } catch (error) {

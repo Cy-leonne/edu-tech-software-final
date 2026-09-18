@@ -1,3 +1,4 @@
+
 /*
   Script to call the Test/MockInitiateStk endpoint to create a pending STK payment without real M-Pesa.
   Optionally auto-completes by calling the mock callback script.

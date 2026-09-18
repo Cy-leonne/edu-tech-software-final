@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -30,7 +32,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const SuperAdminDashboard = () => {
     const { currentUser, currentRole } = useSelector((state) => state.user);

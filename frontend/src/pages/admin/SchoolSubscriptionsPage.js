@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -29,7 +31,6 @@ import {
 import CardMembershipOutlinedIcon from '@mui/icons-material/CardMembershipOutlined';
 import AddIcon from '@mui/icons-material/Add';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 const normalizeId = (value) => {
     if (!value) return '';
     if (typeof value === 'object') return String(value.$oid || value._id || '');

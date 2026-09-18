@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import { useState, useEffect } from 'react';
 import { Box, Paper, TextField, Button, Typography, Grid, Alert, MenuItem } from '@mui/material';
 import { useSelector } from 'react-redux';
@@ -26,7 +28,6 @@ const FinanceSettings = () => {
 
   const fetchSettings = async () => {
     try {
-      const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
       const [settingsResponse, classesResponse] = await Promise.all([
         axios.get(`${API_BASE_URL}/Settings/School/${currentUser?._id}/SystemSettings`, {
           headers: { 'x-admin-id': currentUser?._id }
@@ -79,7 +80,6 @@ const FinanceSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
       await axios.put(`${API_BASE_URL}/Settings/School/${currentUser?._id}/SystemSettings`, { financeSettings: settings.financeSettings }, {
         headers: { 'x-admin-id': currentUser?._id }
       });

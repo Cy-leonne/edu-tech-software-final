@@ -1,3 +1,4 @@
+
 const crypto = require('crypto');
 
 const ALGORITHM = 'aes-256-cbc';
@@ -58,4 +59,5 @@ const decryptText = (value) => {
 module.exports = {
   encryptText,
   decryptText,
+  isEncrypted,
 };

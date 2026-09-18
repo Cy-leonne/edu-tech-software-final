@@ -1,3 +1,4 @@
+
 const mockStudentFind = jest.fn();
 
 jest.mock('../models/parentSchema', () => ({}));

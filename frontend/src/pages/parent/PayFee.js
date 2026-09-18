@@ -1,10 +1,11 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Container, Paper, TextField, Button, Typography, Grid, Card, CardContent, CircularProgress, Alert, Tabs, Tab, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import { ArrowBack, Check, Warning, Phone } from '@mui/icons-material';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const PayFee = () => {
     const navigate = useNavigate();
@@ -24,7 +25,7 @@ const PayFee = () => {
     // Form states
     const [tabValue, setTabValue] = useState(0); // 0 = STK Push, 1 = Manual
     const [amount, setAmount] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('0714675015'); // Default test phone number
+    const [phoneNumber, setPhoneNumber] = useState(''); // Parent enters the M-Pesa number to bill
     const [paymentMethod, setPaymentMethod] = useState('Mpesa');
     const [transactionId, setTransactionId] = useState('');
 
@@ -128,7 +129,8 @@ const PayFee = () => {
                     `${API_BASE_URL}/Parent/CheckStkStatus`,
                     {
                         checkoutRequestId,
-                        studentId: resolveStudentId(student)
+                        studentId: resolveStudentId(student),
+                        parentEmail: currentUser?.email,
                     }
                 );
 

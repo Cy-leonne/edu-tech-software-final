@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +8,6 @@ import { Button, Box, TextField, Stack } from '@mui/material';
 import TableTemplate from '../../../components/TableTemplate';
 import PageHeader from '../../../components/PageHeader';
 import { ErrorState, TableLoadingState } from '../../../components/StateViews';
-import { API_BASE_URL } from '../../../utils/apiConfig';
 
 /**
  * HR staff list.

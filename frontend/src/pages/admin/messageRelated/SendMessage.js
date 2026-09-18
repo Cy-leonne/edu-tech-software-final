@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -46,7 +48,6 @@ const SendMessage = () => {
   const [selectedClass, setSelectedClass] = useState('');
   const [classes, setClasses] = useState([]);
 
-  const REACT_APP_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
   // Fetch recipients based on the selected recipient type
   useEffect(() => {
@@ -55,13 +56,13 @@ const SendMessage = () => {
         let endpoint = '';
 
         if (recipientType === 'Student') {
-          endpoint = `${REACT_APP_BASE_URL}/Admin/StudentList/${schoolId}`;
+          endpoint = `${API_BASE_URL}/Admin/StudentList/${schoolId}`;
         } else if (recipientType === 'Parent') {
-          endpoint = `${REACT_APP_BASE_URL}/Admin/ParentList/${schoolId}`;
+          endpoint = `${API_BASE_URL}/Admin/ParentList/${schoolId}`;
         } else if (recipientType === 'Accountant') {
-          endpoint = `${REACT_APP_BASE_URL}/Admin/Accountants`;
+          endpoint = `${API_BASE_URL}/Admin/Accountants`;
         } else if (recipientType === 'HR') {
-          endpoint = `${REACT_APP_BASE_URL}/Admin/HR`;
+          endpoint = `${API_BASE_URL}/Admin/HR`;
         }
 
         const response = await axios.get(endpoint, {
@@ -86,7 +87,7 @@ const SendMessage = () => {
     if (!useClass) {
       fetchRecipients();
     }
-  }, [recipientType, useClass, currentUser, REACT_APP_BASE_URL, senderId, schoolId]);
+  }, [recipientType, useClass, currentUser, API_BASE_URL, senderId, schoolId]);
 
   // Fetch classes for bulk messaging
   useEffect(() => {
@@ -94,7 +95,7 @@ const SendMessage = () => {
       try {
         // backend route is /SclassList/:id and returns an array
         const response = await axios.get(
-          `${REACT_APP_BASE_URL}/SclassList/${schoolId}`,
+          `${API_BASE_URL}/SclassList/${schoolId}`,
           { headers: { 'x-admin-id': senderId } }
         );
         // accept either { classes: [...] } or direct array
@@ -111,7 +112,7 @@ const SendMessage = () => {
     if (useClass) {
       fetchClasses();
     }
-  }, [useClass, currentUser, REACT_APP_BASE_URL, senderId, schoolId]);
+  }, [useClass, currentUser, API_BASE_URL, senderId, schoolId]);
 
   const handleRecipientToggle = (id) => {
     setSelectedRecipients((prev) =>
@@ -157,8 +158,8 @@ const SendMessage = () => {
 
         endpoint =
           recipientType === 'Student'
-            ? `${REACT_APP_BASE_URL}/Message/Students/SendBulk`
-            : `${REACT_APP_BASE_URL}/Message/Parents/SendBulk`;
+            ? `${API_BASE_URL}/Message/Students/SendBulk`
+            : `${API_BASE_URL}/Message/Parents/SendBulk`;
 
         payload = {
           classId: selectedClass,
@@ -173,10 +174,10 @@ const SendMessage = () => {
         const promises = selectedRecipients.map((recipientId) => {
           const endpointUrl =
             recipientType === 'Student'
-              ? `${REACT_APP_BASE_URL}/Message/Student/Send`
+              ? `${API_BASE_URL}/Message/Student/Send`
               : recipientType === 'Parent'
-              ? `${REACT_APP_BASE_URL}/Message/Parent/Send`
-              : `${REACT_APP_BASE_URL}/Message/Admin/Send`;
+              ? `${API_BASE_URL}/Message/Parent/Send`
+              : `${API_BASE_URL}/Message/Admin/Send`;
 
           const data =
             recipientType === 'Student'

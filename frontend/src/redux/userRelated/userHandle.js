@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import axios from 'axios';
 import {
     authRequest,
@@ -14,7 +16,6 @@ import {
     stuffAdded,
 } from './userSlice';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const getErrorMessage = (error) => {
     if (!error) return 'Unknown error';

@@ -1,3 +1,4 @@
+
 export const calculateSubjectAttendancePercentage = (presentCount, totalSessions) => {
     if (totalSessions === 0 || presentCount === 0) {
         return 0;

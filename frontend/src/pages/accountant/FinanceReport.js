@@ -1,9 +1,10 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { Alert, Box, CircularProgress, Grid, Paper, Stack, Typography } from '@mui/material';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const FinanceReport = () => {
   const { currentUser } = useSelector((state) => state.user);

@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import { useEffect } from 'react';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
@@ -112,7 +114,7 @@ const ShowStudents = () => {
             formData.append('studentsFile', file);
 
             const response = await axios.post(
-                `${process.env.REACT_APP_BASE_URL || 'http://localhost:5000'}/Students/Import/${schoolId}`,
+                `${API_BASE_URL}/Students/Import/${schoolId}`,
                 formData,
                 {
                     headers: {

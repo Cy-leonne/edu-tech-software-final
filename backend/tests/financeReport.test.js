@@ -1,3 +1,4 @@
+
 const { summarizeFinanceReport } = require('../utils/financeUtils');
 
 describe('summarizeFinanceReport', () => {

@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -34,7 +36,6 @@ const CommunicationLogPage = () => {
   const [error, setError] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
-  const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
   const canView = currentUser?.permissions?.sendBulkSMS !== false || currentUser?.permissions?.sendBulkEmail !== false;
 

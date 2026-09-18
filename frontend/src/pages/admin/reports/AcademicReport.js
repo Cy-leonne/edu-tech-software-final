@@ -1,10 +1,11 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Alert, Autocomplete, Box, Button, CircularProgress, Chip, MenuItem, Paper, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { buildPrintBrandingHtml, getSchoolBranding, printBrandingStyles } from '../../../utils/printBranding';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const reportCardRemarkSuggestions = [
     'Exceeding Expectations - Excellent performance.',

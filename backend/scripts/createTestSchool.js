@@ -1,3 +1,4 @@
+
 const { connectToMongo } = require('../utils/db');
 const School = require('../models/schoolSchema');
 const Admin = require('../models/adminSchema');

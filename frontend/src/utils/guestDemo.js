@@ -1,3 +1,4 @@
+
 /**
  * Demo ("guest") login configuration.
  *

@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const School = require('../models/schoolSchema.js');

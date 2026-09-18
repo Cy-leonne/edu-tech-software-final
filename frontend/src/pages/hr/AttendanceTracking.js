@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -24,7 +26,6 @@ import {
 } from '@mui/material';
 import { CheckCircle, Schedule, Cancel } from '@mui/icons-material';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const AttendanceTracking = () => {
   const { currentUser } = useSelector((state) => state.user);

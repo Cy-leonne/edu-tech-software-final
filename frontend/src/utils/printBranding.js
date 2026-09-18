@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
+import { API_BASE_URL } from './apiConfig';
+
 
 const normalizeText = (value) => {
     if (value === null || value === undefined) return '';

@@ -1,10 +1,11 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Paper, TextField, Button, Typography, Grid, Alert } from '@mui/material';
 import { useSelector } from 'react-redux';
 import ERPIntegrationDetails from './ERPIntegrationDetails';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 const IntegrationsSettings = () => {
   const { currentUser } = useSelector(state => state.user);

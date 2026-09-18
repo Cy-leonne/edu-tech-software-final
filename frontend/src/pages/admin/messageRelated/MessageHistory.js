@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -37,7 +39,6 @@ const MessageHistory = () => {
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
 
-  const REACT_APP_BASE_URL = process.env.REACT_APP_BASE_URL;
 
   // Fetch messages and stats
   useEffect(() => {
@@ -49,7 +50,7 @@ const MessageHistory = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `${REACT_APP_BASE_URL}/Message/Sent`,
+        `${API_BASE_URL}/Message/Sent`,
         { headers: { 'x-admin-id': currentUser._id } }
       );
       setMessages(response.data.data || []);
@@ -63,7 +64,7 @@ const MessageHistory = () => {
   const fetchStats = async () => {
     try {
       const response = await axios.get(
-        `${REACT_APP_BASE_URL}/Message/Stats/Overview`,
+        `${API_BASE_URL}/Message/Stats/Overview`,
         { headers: { 'x-admin-id': currentUser._id } }
       );
       setStats(response.data?.data || {});
@@ -75,7 +76,7 @@ const MessageHistory = () => {
   const handleDeleteMessage = async (messageId) => {
     try {
       await axios.delete(
-        `${REACT_APP_BASE_URL}/Message/${messageId}`,
+        `${API_BASE_URL}/Message/${messageId}`,
         { headers: { 'x-admin-id': currentUser._id } }
       );
       setMessages(messages.filter((msg) => msg._id !== messageId));

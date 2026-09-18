@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../utils/apiConfig';
+
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Box, Typography, Paper, TextField, CssBaseline, CircularProgress, Grid } from '@mui/material';
@@ -47,7 +49,6 @@ const ForgotPasswordPage = ({ role = 'Admin' }) => {
 
         setLoader(true);
         try {
-            const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
             const endpointRole = role === 'SuperAdmin' ? 'SuperAdmin' : role === 'Student' ? 'Student' : role === 'Teacher' ? 'Teacher' : 'Admin';
             const response = await axios.post(`${API_BASE_URL}/${endpointRole}/RequestPasswordReset`, {
                 email

@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../utils/apiConfig';
+
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -33,9 +35,8 @@ const AcceptancePage = () => {
     setSaving(true);
     setError('');
     try {
-      const apiBaseUrl = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
       await Promise.all(['terms', 'privacy', 'dpa', 'eula'].map((documentType) => axios.post(
-        `${apiBaseUrl}/LegalAcceptance`,
+        `${API_BASE_URL}/LegalAcceptance`,
         { user_id: userId, school_id: schoolId, document_type: documentType, document_version: '1.0', accepted: true },
         { headers: { 'x-user-id': userId, 'x-admin-id': userId } }
       )));

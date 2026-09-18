@@ -1,3 +1,4 @@
+
 // In-memory test database for when MongoDB is unavailable
 const bcrypt = require('bcrypt');
 

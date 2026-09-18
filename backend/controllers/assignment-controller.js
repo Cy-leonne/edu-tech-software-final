@@ -1,3 +1,4 @@
+
 const Assignment = require('../models/assignmentSchema.js');
 const { sanitizeSearchTerm } = require('../utils/searchUtils.js');
 const Teacher = require('../models/teacherSchema.js');

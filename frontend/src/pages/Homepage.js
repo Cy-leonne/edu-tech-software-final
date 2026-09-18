@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Grid, Button, Typography, Card, CardContent, List, ListItem, ListItemText, IconButton, Menu, MenuItem } from '@mui/material';
@@ -219,7 +220,7 @@ const Header = styled.header`
   background: #ffffffee;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
-  justify-content: space-between;
+    justify-content: center;
   align-items: center;
     padding: 14px clamp(16px, 4vw, 48px);
   gap: 20px;
@@ -236,6 +237,7 @@ const Nav = styled.nav`
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
+    justify-content: center;
 
     @media (max-width: 1050px) {
         display: none;

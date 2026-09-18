@@ -1,3 +1,4 @@
+
 const { applyClassFeeToStudent } = require('../utils/financeUtils');
 
 describe('applyClassFeeToStudent', () => {

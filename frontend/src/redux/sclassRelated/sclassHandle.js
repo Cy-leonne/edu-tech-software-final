@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import axios from 'axios';
 import {
     getRequest,
@@ -13,7 +15,6 @@ import {
     operationSuccess
 } from './sclassSlice';
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
 export const getAllSclasses = (id, address) => async (dispatch) => {
     dispatch(getRequest());

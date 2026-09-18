@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../utils/apiConfig';
+
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -242,7 +244,6 @@ const LoginPage = ({ role }) => {
 
         setChangePasswordLoader(true);
         try {
-            const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
             const response = await fetch(`${API_BASE_URL}/Student/ChangePassword`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

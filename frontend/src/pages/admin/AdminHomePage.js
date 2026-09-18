@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import { Container, Grid, Paper, Button, Box, Stack, Skeleton } from '@mui/material'
 import { useNavigate } from 'react-router-dom';
 import SeeNotice from '../../components/SeeNotice';
@@ -36,14 +38,15 @@ const AdminHomePage = () => {
     const [summary, setSummary] = useState({ approvedCount: 0, pendingCount: 0 });
     const [summaryError, setSummaryError] = useState(false);
     const [loading, setLoading] = useState(true);
-    const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
     const adminID = currentUser?._id
 
     const fetchSummary = async () => {
         try {
             setSummaryError(false);
-            const response = await axios.get(`${API_BASE_URL}/Admin/Summary`);
+            const response = await axios.get(`${API_BASE_URL}/Admin/Summary`, {
+                headers: { 'x-admin-id': currentUser?._id || currentUser?.id }
+            });
             setSummary(response.data);
         } catch (error) {
             console.error('Failed to load summary:', error?.message || error);

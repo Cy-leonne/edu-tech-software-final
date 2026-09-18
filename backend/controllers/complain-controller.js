@@ -1,3 +1,4 @@
+
 const Complain = require('../models/complainSchema.js');
 const { getAdminIdFromReq, verifySchoolId } = require('../middleware/schoolAccess.js');
 

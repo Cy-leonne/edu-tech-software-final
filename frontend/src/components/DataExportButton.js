@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../utils/apiConfig';
+
 import { useState } from 'react';
 import axios from 'axios';
 import { Button } from '@mui/material';
@@ -12,8 +14,7 @@ const DataExportButton = ({ endpoint, filename, label = 'Download Data' }) => {
 
     setLoading(true);
     try {
-      const baseUrl = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
-      const response = await axios.get(`${baseUrl}${endpoint}`, {
+      const response = await axios.get(`${API_BASE_URL}${endpoint}`, {
         responseType: 'blob',
         headers: { 'x-admin-id': userId, 'x-user-id': userId },
       });

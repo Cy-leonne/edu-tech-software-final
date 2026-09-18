@@ -1,3 +1,4 @@
+
 const { escapeRegExp, sanitizeSearchTerm, exactMatchRegex, MAX_SEARCH_LENGTH } = require('../utils/searchUtils');
 
 describe('search input sanitisation', () => {

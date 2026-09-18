@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import axios from 'axios';
 import {
     getRequest,
@@ -10,7 +12,7 @@ export const getAllComplains = (id, address) => async (dispatch) => {
     dispatch(getRequest());
 
     try {
-        const result = await axios.get(`${process.env.REACT_APP_BASE_URL}/${address}List/${id}`);
+        const result = await axios.get(`${API_BASE_URL}/${address}List/${id}`);
         if (result.data.message) {
             dispatch(getFailed(result.data.message));
         } else {

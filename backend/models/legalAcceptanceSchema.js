@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const legalAcceptanceSchema = new mongoose.Schema({

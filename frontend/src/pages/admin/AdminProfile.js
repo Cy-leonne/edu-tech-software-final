@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 // import React, { useState } from 'react';
 // import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material'
 // import { useDispatch, useSelector } from 'react-redux';
@@ -23,7 +25,6 @@ const AdminProfile = () => {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
-    const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
 
     useEffect(() => {
         if (currentUser?.settings?.schoolProfile) {

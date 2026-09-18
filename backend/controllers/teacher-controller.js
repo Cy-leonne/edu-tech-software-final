@@ -1,3 +1,4 @@
+
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const Teacher = require('../models/teacherSchema.js');

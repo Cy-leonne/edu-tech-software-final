@@ -1,3 +1,4 @@
+
 // CSRF Protection Middleware
 // Prevents Cross-Site Request Forgery attacks
 

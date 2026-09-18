@@ -1,3 +1,4 @@
+
 const Admin = require('../models/adminSchema.js');
 const Student = require('../models/studentSchema.js');
 const Teacher = require('../models/teacherSchema.js');

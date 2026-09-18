@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../utils/apiConfig';
+
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import {
@@ -30,7 +32,6 @@ import {
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const EmployeeProfilesPage = () => {
     const { currentUser } = useSelector((state) => state.user);
@@ -247,7 +248,7 @@ const EmployeeProfilesPage = () => {
             const school = getSchoolId();
             const requestParams = school ? { school } : {};
 
-            const response = await axios.get(`${API_URL}/Employee/GetAll`, {
+            const response = await axios.get(`${API_BASE_URL}/Employee/GetAll`, {
                 params: requestParams,
                 headers: getRequestHeaders(),
             });
@@ -442,10 +443,10 @@ const EmployeeProfilesPage = () => {
 
             let response;
             if (editingId) {
-                response = await axios.put(`${API_URL}/Employee/${editingId}`, payload, { headers: requestHeaders });
+                response = await axios.put(`${API_BASE_URL}/Employee/${editingId}`, payload, { headers: requestHeaders });
                 setSuccessMessage(response?.data?.message || 'Employee updated successfully');
             } else {
-                response = await axios.post(`${API_URL}/Employee/Add`, payload, { headers: requestHeaders });
+                response = await axios.post(`${API_BASE_URL}/Employee/Add`, payload, { headers: requestHeaders });
                 if (response?.data?.created === false && response?.data?.employee) {
                     setSuccessMessage(response?.data?.message || 'Employee already exists and was loaded');
                     handleOpenDialog(response.data.employee);
@@ -494,7 +495,7 @@ const EmployeeProfilesPage = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to deactivate this employee?')) {
             try {
-                await axios.delete(`${API_URL}/Employee/${id}`, { headers: getRequestHeaders() });
+                await axios.delete(`${API_BASE_URL}/Employee/${id}`, { headers: getRequestHeaders() });
                 setSuccessMessage('Employee deactivated successfully');
                 fetchEmployees();
             } catch (err) {

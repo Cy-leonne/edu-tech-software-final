@@ -1,3 +1,4 @@
+
 const { getSchoolScopeFilter } = require('../controllers/admin-controller.js');
 
 describe('getSchoolScopeFilter', () => {

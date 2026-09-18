@@ -1,3 +1,4 @@
+
 const Timetable = require('../models/timetableSchema.js');
 const Sclass = require('../models/sclassSchema.js');
 const Subject = require('../models/subjectSchema.js');

@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const Settings = require('../models/settingsSchema');
 const SecuritySettings = require('../models/securitySettingsSchema');
@@ -22,6 +23,7 @@ const {
     getBackupStatistics,
 } = require('../utils/backupService');
 const { applyClassFeeToStudent, summarizeFinanceReport } = require('../utils/financeUtils');
+const { encryptSettingsSecrets, redactSettingsSecrets, mergeSettingsUpdates } = require('../utils/settingsSecrets');
 
 // Branding upload handler will be used to accept logo uploads
 const uploadSchoolLogo = async (req, res) => {
@@ -180,12 +182,15 @@ const getSystemSettings = async (req, res) => {
 
         const school = await School.findById(schoolId).select('accountBalance paymentSettings.bankDetails schoolName');
 
+        // Never return real per-school credentials to the browser.
+        const safeSettings = redactSettingsSecrets(settings.toObject ? settings.toObject() : settings);
+
         res.status(200).json({
             message: 'Settings retrieved successfully',
             schoolName: school?.schoolName || '',
             schoolAccountBalance: Number(school?.accountBalance || 0),
             bankDetails: school?.paymentSettings?.bankDetails || null,
-            settings,
+            settings: safeSettings,
         });
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving settings', error: error.message });
@@ -236,20 +241,26 @@ const updateSystemSettings = async (req, res) => {
 
         const changesBefore = { ...settings.toObject() };
 
-        if (updates.financeSettings) {
-            settings.financeSettings = {
-                ...(settings.financeSettings || {}),
-                ...updates.financeSettings,
-            };
-            delete updates.financeSettings;
+        // Merge incoming updates on top of the existing settings. Credential
+        // fields that come back as redaction masks / empty strings are ignored
+        // (the stored secret is kept).
+        const merged = mergeSettingsUpdates(settings.toObject(), updates);
+
+        if (merged.financeSettings) {
+            settings.financeSettings = merged.financeSettings;
         }
 
         // Update fields
-        Object.keys(updates).forEach(key => {
+        Object.keys(merged).forEach(key => {
             if (key !== 'school' && key !== '_id') {
-                settings[key] = updates[key];
+                settings[key] = merged[key];
             }
         });
+
+        // Encrypt per-school credentials at rest. Redacted masks returned to the
+        // browser are ignored and '__CLEAR__' removes a secret.
+        const encrypted = encryptSettingsSecrets(settings.toObject ? settings.toObject() : settings);
+        settings.set(encrypted);
 
         settings.updatedAt = new Date();
         settings.updatedBy = adminId;
@@ -259,7 +270,7 @@ const updateSystemSettings = async (req, res) => {
             await applyFinanceSettingsToStudents(schoolId, settings.financeSettings);
         }
 
-        // Log the change
+        // Log the change (secrets are already encrypted by this point).
         await logSettingsChange(
             schoolId,
             adminId,
@@ -267,15 +278,15 @@ const updateSystemSettings = async (req, res) => {
             admin.role,
             'settings',
             'System Settings',
-            changesBefore,
-            settings.toObject(),
+            redactSettingsSecrets(changesBefore),
+            redactSettingsSecrets(settings.toObject()),
             getClientIP(req),
             req.get('user-agent')
         );
 
         res.status(200).json({
             message: 'Settings updated successfully',
-            settings,
+            settings: redactSettingsSecrets(settings.toObject ? settings.toObject() : settings),
         });
     } catch (error) {
         res.status(500).json({ message: 'Error updating settings', error: error.message });

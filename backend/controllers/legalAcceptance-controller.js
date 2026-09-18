@@ -1,3 +1,4 @@
+
 const LegalAcceptance = require('../models/legalAcceptanceSchema.js');
 
 const saveLegalAcceptance = async (req, res) => {

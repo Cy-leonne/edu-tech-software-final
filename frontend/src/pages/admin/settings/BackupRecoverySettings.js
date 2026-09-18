@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '../../../utils/apiConfig';
+
 import { useState, useEffect } from 'react';
 import { Box, Paper, TextField, Button, Typography, Grid, Alert, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import { useSelector } from 'react-redux';
@@ -18,7 +20,6 @@ const BackupRecoverySettings = () => {
 
   const fetchBackups = async () => {
     try {
-      const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
       const response = await axios.get(`${API_BASE_URL}/Settings/School/${currentUser?._id}/Backups`, {
         headers: { 'x-admin-id': currentUser?._id }
       });
@@ -32,7 +33,6 @@ const BackupRecoverySettings = () => {
 
   const fetchStats = async () => {
     try {
-      const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
       const response = await axios.get(`${API_BASE_URL}/Settings/School/${currentUser?._id}/Backup/Statistics`, {
         headers: { 'x-admin-id': currentUser?._id }
       });
@@ -45,7 +45,6 @@ const BackupRecoverySettings = () => {
   const createBackup = async (mode = 'full') => {
     setBacking(true);
     try {
-      const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
       await axios.post(`${API_BASE_URL}/Settings/School/${currentUser?._id}/Backup/Create`, 
         { backupMode: mode },
         { headers: { 'x-admin-id': currentUser?._id } }
@@ -64,7 +63,6 @@ const BackupRecoverySettings = () => {
 
   const verifyBackup = async (backupId) => {
     try {
-      const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
       await axios.post(`${API_BASE_URL}/Settings/School/${currentUser?._id}/Backup/${backupId}/Verify`, {}, {
         headers: { 'x-admin-id': currentUser?._id }
       });

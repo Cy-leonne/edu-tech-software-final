@@ -38,7 +38,7 @@ const TeacherHomePage = () => {
                             <Title>
                                 Class Students
                             </Title>
-                            <Data start={0} end={numberOfStudents} duration={2.5} />
+                            <Data><CountUp start={0} end={numberOfStudents || 0} duration={2.5} /></Data>
                         </StyledPaper>
                     </Grid>
                     <Grid item xs={12} md={3} lg={3}>
@@ -47,7 +47,7 @@ const TeacherHomePage = () => {
                             <Title>
                                 Total Lessons
                             </Title>
-                            <Data start={0} end={numberOfSessions} duration={5} />
+                            <Data><CountUp start={0} end={numberOfSessions || 0} duration={5} /></Data>
                         </StyledPaper>
                     </Grid>
                     <Grid item xs={12} md={3} lg={3}>
@@ -56,7 +56,7 @@ const TeacherHomePage = () => {
                             <Title>
                                 Tests Taken
                             </Title>
-                            <Data start={0} end={24} duration={4} />
+                            <Data><CountUp start={0} end={24} duration={4} /></Data>
                         </StyledPaper>
                     </Grid>
                     <Grid item xs={12} md={3} lg={3}>
@@ -65,7 +65,8 @@ const TeacherHomePage = () => {
                             <Title>
                                 Total Hours
                             </Title>
-                            <Data start={0} end={30} duration={4} suffix="hrs"/>                        </StyledPaper>
+                            <Data><CountUp start={0} end={30} duration={4} suffix="hrs" /></Data>
+                        </StyledPaper>
                     </Grid>
                     <Grid item xs={12}>
                         <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
@@ -82,17 +83,26 @@ const StyledPaper = styled(Paper)`
   padding: 16px;
   display: flex;
   flex-direction: column;
-  height: 200px;
+    height: 200px;
+    box-sizing: border-box;
   justify-content: space-between;
   align-items: center;
   text-align: center;
+
+    img {
+        width: 72px;
+        height: 72px;
+        flex: 0 0 72px;
+        object-fit: contain;
+    }
 `;
 
 const Title = styled.p`
+    margin: 0;
   font-size: 1.25rem;
 `;
 
-const Data = styled(CountUp)`
+const Data = styled.span`
   font-size: calc(1.3rem + .6vw);
   color: green;
 `;

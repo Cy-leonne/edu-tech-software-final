@@ -26,6 +26,7 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const AcceptancePage = lazy(() => import('./pages/AcceptancePage'));
 const DpaPage = lazy(() => import('./pages/DpaPage'));
 const EulaPage = lazy(() => import('./pages/EulaPage'));
+const Logout = lazy(() => import('./pages/Logout'));
 const ErrorPage = lazy(() => import('./pages/NotFoundPage'));
 
 const RouteFallback = () => <LoadingState label="Loading portal…" minHeight="60vh" />;
@@ -117,7 +118,7 @@ const App = () => {
           </RequireRole>
         } />
 
-        <Route path="/logout" element={<Homepage />} />
+        <Route path="/logout" element={<Logout />} />
         <Route path="/404" element={<ErrorPage />} />
         <Route path='*' element={<Navigate to="/404" replace />} />
         </Routes>

@@ -15,9 +15,9 @@ import ScheduleIcon from '@mui/icons-material/CalendarToday';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 import QuizIcon from '@mui/icons-material/Quiz';
 
-const TeacherSideBar = () => {
+const TeacherSideBar = ({ open = true }) => {
     const { currentUser } = useSelector((state) => state.user);
-    const sclassName = currentUser.teachSclass
+    const sclassName = currentUser?.teachSclass
 
     const location = useLocation();
     return (
@@ -33,13 +33,13 @@ const TeacherSideBar = () => {
                     <ListItemIcon>
                         <ClassOutlinedIcon color={location.pathname.startsWith("/Teacher/class") ? 'primary' : 'inherit'} />
                     </ListItemIcon>
-                    <ListItemText primary={`Class ${sclassName.sclassName}`} />
+                    {open && <ListItemText primary={`Class ${sclassName?.sclassName || ''}`} />}
                 </ListItemButton>
                 <ListItemButton component={Link} to="/Teacher/timetable">
                     <ListItemIcon>
                         <ScheduleIcon color={location.pathname.startsWith("/Teacher/timetable") ? 'primary' : 'inherit'} />
                     </ListItemIcon>
-                    <ListItemText primary="Timetable" />
+                    {open && <ListItemText primary="Timetable" />}
                 </ListItemButton>
                 <ListItemButton component={Link} to="/Teacher/complain">
                     <ListItemIcon>

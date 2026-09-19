@@ -12,7 +12,8 @@ const { sendFeeConfirmationToParent, sendPaymentReminderToParent, sendSMS } = re
 const { sendResetPasswordLink, sendEmail, sendPasswordResetEmail } = require('../services/emailService.js');
 const { logAuditAction } = require('../utils/auditLogger');
 const { validateStudentInput, validateStudentUpdateInput, validatePassword, validateEmail } = require('../utils/validation.js');
-const { getAdminIdFromReq, verifySchoolId, verifyEntityBelongsToAdminSchool, enforceSubscriptionStatus } = require('../middleware/schoolAccess.js');
+const { getAdminIdFromReq, getRequestUser, verifySchoolId, verifyEntityBelongsToAdminSchool, enforceSubscriptionStatus } = require('../middleware/schoolAccess.js');
+const { getAssignedClassIds, getAssignedSubjectIds, teacherHasClass, teacherHasSubject } = require('../utils/teacherAccess.js');
 const {
     GENERIC_RESET_REQUEST_MESSAGE,
     buildResetUrl,
@@ -23,6 +24,7 @@ const {
     safeCompare,
 } = require('../utils/passwordReset.js');
 const { escapeRegExp, sanitizeSearchTerm } = require('../utils/searchUtils.js');
+const { reconcileStudentFees } = require('../utils/financeUtils.js');
 
 const GRADING_TABLES = {
     achievement: [
@@ -686,15 +688,27 @@ const studentLogIn = async (req, res) => {
 
 const getStudents = async (req, res) => {
     try {
+        const query = { 'attendance.subName': subName };
+        const requestUser = await getRequestUser(req);
         const requesterId = getAdminIdFromReq(req);
         const requester = requesterId ? await Admin.findById(requesterId).select('role school') : null;
         if (!(await verifySchoolId(req, res, req.params.id))) return;
-        const studentQuery = requester?.role === 'SuperAdmin'
-            ? {}
-            : { school: { $in: [requester?.school, req.params.id, requesterId].filter(Boolean) } };
+        const studentQuery = requestUser?.type === 'teacher'
+            ? { school: requestUser.schoolId, sclassName: { $in: getAssignedClassIds(requestUser.user) } }
+            : requester?.role === 'SuperAdmin'
+                ? {}
+                : { school: { $in: [requester?.school, req.params.id, requesterId].filter(Boolean) } };
         let students = await Student.find(studentQuery).populate("sclassName", "sclassName");
         if (students.length > 0) {
-            students.forEach(reconcileAmounts);
+            students.forEach((student) => {
+                reconcileAmounts(student);
+                if (requestUser?.type === 'teacher') {
+                    const allowedSubjects = getAssignedSubjectIds(requestUser.user);
+                    student.attendance = student.attendance.filter((record) =>
+                        allowedSubjects.includes(String(record.subName?._id || record.subName))
+                    );
+                }
+            });
             let modifiedStudents = students.map((student) => {
                 const studentObj = student.toObject({ getters: true });
                 delete studentObj.password;
@@ -711,6 +725,7 @@ const getStudents = async (req, res) => {
 
 const getStudentDetail = async (req, res) => {
     try {
+        const requestUser = await getRequestUser(req);
         let student = await Student.findById(req.params.id)
             .populate("school", "schoolName")
             .populate("sclassName", "sclassName")
@@ -718,7 +733,16 @@ const getStudentDetail = async (req, res) => {
             .populate('attendance.subName', 'subName')
             .select("-password");
         if (!(await verifyEntityBelongsToAdminSchool(req, res, student))) return;
+        if (requestUser?.type === 'teacher' && !teacherHasClass(requestUser.user, student.sclassName)) {
+            return res.status(403).send({ message: 'Teachers can only view students in their assigned class.' });
+        }
         reconcileAmounts(student);
+        if (requestUser?.type === 'teacher') {
+            const allowedSubjects = getAssignedSubjectIds(requestUser.user);
+            student.attendance = student.attendance.filter((record) =>
+                allowedSubjects.includes(String(record.subName?._id || record.subName))
+            );
+        }
         const studentObj = student.toObject({ getters: true });
         delete studentObj.password;
 
@@ -862,54 +886,7 @@ const updateStudent = async (req, res) => {
     }
 }
 
-const normalizePaymentStatus = (status) => {
-    if (!status) return 'Completed';
-    const normalized = status.toString().toLowerCase();
-    if (['completed', 'success'].includes(normalized)) return 'Completed';
-    if (normalized === 'verified') return 'Verified';
-    if (['failed', 'declined', 'error'].includes(normalized)) return 'Failed';
-    return 'Pending';
-};
-
-const reconcileAmounts = (student) => {
-    const history = Array.isArray(student.paymentHistory) ? student.paymentHistory : [];
-    const currentPeriod = student.feePeriodKey || 'initial';
-    const totalFees = Number(student.totalFees) || 0;
-    const normalizedHistory = history
-        .map((p) => ({
-            ...p,
-            status: normalizePaymentStatus(p.status),
-            amount: Number(p.amount || 0)
-        }))
-        .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
-
-    let runningTotal = 0;
-    const updatedHistory = normalizedHistory.map((payment) => {
-        if (payment.feePeriodKey === currentPeriod && ['Completed', 'Verified'].includes(payment.status)) {
-            runningTotal += payment.amount;
-        }
-        const balanceAfter = payment.feePeriodKey === currentPeriod ? totalFees - runningTotal : payment.balanceAfter;
-        return {
-            ...payment,
-            balanceAfter,
-        };
-    });
-
-    student.amountPaid = runningTotal;
-    student.balance = totalFees - runningTotal;
-
-    if (totalFees > 0 && student.balance <= 0) {
-        student.paymentStatus = 'Completed';
-    } else if (updatedHistory.some(p => p.status === 'Pending')) {
-        student.paymentStatus = 'Pending';
-    } else if (runningTotal > 0) {
-        student.paymentStatus = 'Pending';
-    } else {
-        student.paymentStatus = 'Pending';
-    }
-
-    student.paymentHistory = updatedHistory;
-};
+const reconcileAmounts = (student) => reconcileStudentFees(student);
 
 const findStudentForPayment = async ({ studentId, admissionNo, rollNum, studentName, paybill, accountNumber, school }) => {
     if (studentId) {
@@ -1884,6 +1861,18 @@ const studentAttendance = async (req, res) => {
         }
 
         const subject = await Subject.findById(normalizedSubject);
+        const requestUser = await getRequestUser(req);
+        if (requestUser?.type === 'teacher') {
+            if (!teacherHasClass(requestUser.user, student.sclassName)) {
+                return res.status(403).send({ message: 'Teachers can only take attendance for their assigned class.' });
+            }
+            if (!teacherHasSubject(requestUser.user, normalizedSubject)) {
+                return res.status(403).send({ message: 'Teachers can only take attendance for their assigned subjects.' });
+            }
+            if (!subject || String(subject.sclassName) !== String(student.sclassName) || String(subject.school) !== String(student.school)) {
+                return res.status(403).send({ message: 'The selected subject is not assigned to this student class.' });
+            }
+        }
         
         // Check for existing attendance record
         const existingAttendance = student.attendance.find((a) => {
@@ -1924,8 +1913,15 @@ const clearAllStudentsAttendanceBySubject = async (req, res) => {
     const adminId = req.get('x-admin-id') || req.body.adminID || req.query.adminID || req.query.adminId;
 
     try {
-        const query = { 'attendance.subName': subName };
-        if (adminId) query.school = adminId;
+        const requestUser = await getRequestUser(req);
+        if (requestUser?.type === 'teacher') {
+            if (!teacherHasSubject(requestUser.user, subName)) {
+                return res.status(403).send({ message: 'Teachers can only manage attendance for their assigned subjects.' });
+            }
+            query.school = requestUser.schoolId;
+            query.sclassName = { $in: getAssignedClassIds(requestUser.user) };
+        }
+        if (adminId && requestUser?.type !== 'teacher') query.school = adminId;
 
         const result = await Student.updateMany(
             query,
@@ -1941,6 +1937,10 @@ const clearAllStudentsAttendance = async (req, res) => {
     const schoolId = req.params.id
 
     try {
+        const requestUser = await getRequestUser(req);
+        if (requestUser?.type === 'teacher') {
+            return res.status(403).send({ message: 'Only administrators can clear attendance for an entire school.' });
+        }
         if (!(await verifySchoolId(req, res, schoolId))) return;
         const result = await Student.updateMany(
             { school: schoolId },
@@ -1960,6 +1960,12 @@ const removeStudentAttendanceBySubject = async (req, res) => {
     try {
         const student = await Student.findById(studentId);
         if (!(await verifyEntityBelongsToAdminSchool(req, res, student))) return;
+        const requestUser = await getRequestUser(req);
+        if (requestUser?.type === 'teacher') {
+            if (!teacherHasClass(requestUser.user, student.sclassName) || !teacherHasSubject(requestUser.user, subName)) {
+                return res.status(403).send({ message: 'Teachers can only manage attendance for their assigned class and subjects.' });
+            }
+        }
 
         const result = await Student.updateOne(
             { _id: studentId },
@@ -1978,6 +1984,10 @@ const removeStudentAttendance = async (req, res) => {
     try {
         const student = await Student.findById(studentId);
         if (!(await verifyEntityBelongsToAdminSchool(req, res, student))) return;
+        const requestUser = await getRequestUser(req);
+        if (requestUser?.type === 'teacher') {
+            return res.status(403).send({ message: 'Only administrators can clear all attendance for a student.' });
+        }
 
         const result = await Student.updateOne(
             { _id: studentId },
@@ -1994,10 +2004,14 @@ const searchStudent = async (req, res) => {
     try {
         const { schoolId } = req.params;
         const { rollNum, admissionNo, query } = req.query;
+        const requestUser = await getRequestUser(req);
 
         if (!(await verifySchoolId(req, res, schoolId))) return;
 
         const searchQuery = { school: schoolId };
+        if (requestUser?.type === 'teacher') {
+            searchQuery.sclassName = { $in: getAssignedClassIds(requestUser.user) };
+        }
         const searchConditions = [];
         const digitsOnly = (value) => typeof value === 'string' && /^[0-9]+$/.test(value);
         // Search terms are escaped before they reach MongoDB so user input can
@@ -2050,7 +2064,15 @@ const searchStudent = async (req, res) => {
             return res.send({ message: 'No students found matching the search criteria', results: [] });
         }
 
-        students.forEach(reconcileAmounts);
+        students.forEach((student) => {
+            reconcileAmounts(student);
+            if (requestUser?.type === 'teacher') {
+                const allowedSubjects = getAssignedSubjectIds(requestUser.user);
+                student.attendance = student.attendance.filter((record) =>
+                    allowedSubjects.includes(String(record.subName?._id || record.subName))
+                );
+            }
+        });
 
         res.send({
             message: `Found ${students.length} student(s)`,

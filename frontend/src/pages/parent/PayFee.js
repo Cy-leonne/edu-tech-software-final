@@ -222,6 +222,7 @@ const PayFee = () => {
                 const updatedUser = { ...currentUser };
                 updatedUser.student = {
                     ...student,
+                    totalFees: response.data.totalFees ?? student.totalFees,
                     amountPaid: response.data.amountPaid,
                     balance: response.data.balance,
                     paymentStatus: response.data.paymentStatus,

@@ -119,7 +119,7 @@ const getRequestUser = async (req) => {
         return { type: 'admin', user: admin, schoolId, school };
     }
 
-    const teacher = await Teacher.findById(userId).select('school');
+    const teacher = await Teacher.findById(userId).select('school teachSclass teachSclasses teachSubject teachSubjects');
     if (teacher) {
         const schoolId = resolveEntitySchoolId(teacher, 'school');
         return { type: 'teacher', user: teacher, schoolId, school: await enforceSubscriptionStatus(schoolId) };

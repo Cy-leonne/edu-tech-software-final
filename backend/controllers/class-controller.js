@@ -5,6 +5,7 @@ const Subject = require('../models/subjectSchema.js');
 const Teacher = require('../models/teacherSchema.js');
 const { getAdminIdFromReq, verifySchoolId, verifyEntityBelongsToAdminSchool, getRequestUser } = require('../middleware/schoolAccess.js');
 const { logAuditAction } = require('../utils/auditLogger');
+const { teacherHasClass } = require('../utils/teacherAccess');
 
 const sclassCreate = async (req, res) => {
     try {
@@ -72,6 +73,10 @@ const getSclassStudents = async (req, res) => {
 
         const sclass = await Sclass.findById(classId);
         if (!(await verifyEntityBelongsToAdminSchool(req, res, sclass))) return;
+        const requestUser = await getRequestUser(req);
+        if (requestUser?.type === 'teacher' && !teacherHasClass(requestUser.user, classId)) {
+            return res.status(403).json({ message: 'Teachers can only view students in their assigned class.' });
+        }
         let students = await Student.find({ sclassName: classId })
         if (students.length > 0) {
             let modifiedStudents = students.map((student) => {

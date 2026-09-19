@@ -90,7 +90,7 @@ const AccountMenu = () => {
                     <ListItemIcon>
                         <Logout fontSize="small" />
                     </ListItemIcon>
-                    <Link to={`${adminBasePath}/logout`}>
+                    <Link to="/logout">
                         Logout
                     </Link>
                 </MenuItem>

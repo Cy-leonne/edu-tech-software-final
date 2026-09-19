@@ -9,6 +9,7 @@ const { verifyEntityBelongsToAdminSchool, getAdminIdFromReq } = require('../midd
 const { initiateStkPush, queryStkPushStatus, validateCallback } = require('../services/mpesaService');
 const { logAuditAction } = require('../utils/auditLogger');
 const { decryptSettingsSecrets } = require('../utils/settingsSecrets');
+const { reconcileStudentFees } = require('../utils/financeUtils');
 
 /**
  * Returns the school's M-Pesa settings with credential fields decrypted with
@@ -58,25 +59,6 @@ const normalizePaymentAmount = (value) => {
     return amount;
 };
 
-/** Recomputes amountPaid / balance / paymentStatus from the payment history. */
-const reconcileStudentFees = (student) => {
-    const history = Array.isArray(student.paymentHistory) ? student.paymentHistory : [];
-    const currentPeriod = student.feePeriodKey || 'initial';
-    const completedPayments = history.filter(
-        (p) => (p.feePeriodKey || 'initial') === currentPeriod && ['Completed', 'Verified'].includes(p.status)
-    );
-    const computedAmountPaid = completedPayments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
-    student.amountPaid = computedAmountPaid;
-    student.balance = (Number(student.totalFees) || 0) - computedAmountPaid;
-    student.paymentStatus = completedPayments.length > 0
-        ? 'Completed'
-        : (history.some((p) => p.status === 'Pending') ? 'Pending' : 'Pending');
-    if (history.length > 0) {
-        history[history.length - 1].balanceAfter = student.balance;
-    }
-    return student;
-};
-
 /** Ordered list of every payment record of a student matching a checkout id. */
 const findPaymentsByCheckoutId = (student, checkoutRequestId) => {
     const records = Array.isArray(student?.paymentHistory) ? student.paymentHistory : [];
@@ -99,8 +81,8 @@ const parentLogIn = async (req, res) => {
         const normalizedParentEmail = loginEmail?.trim().toLowerCase();
         const normalizedAdmissionNo = admissionNo?.toString().trim();
 
-        if (!normalizedParentEmail || !normalizedAdmissionNo || !password) {
-            return res.status(400).send({ message: 'Parent or guardian email, student admission number, and password are required' });
+        if (!normalizedAdmissionNo || !password) {
+            return res.status(400).send({ message: 'Student admission number and password are required' });
         }
 
         const student = await Student.findOne({ admissionNo: normalizedAdmissionNo })
@@ -113,19 +95,26 @@ const parentLogIn = async (req, res) => {
 
         const studentParentEmail = student.parentEmail?.trim().toLowerCase();
         const studentGuardianEmail = student.guardianEmail?.trim().toLowerCase();
-        const validEmails = [studentParentEmail, studentGuardianEmail].filter(Boolean);
+        const validEmails = [studentParentEmail, studentGuardianEmail, student.email].filter(Boolean);
 
-        if (!validEmails.includes(normalizedParentEmail)) {
+        if (normalizedParentEmail && !validEmails.includes(normalizedParentEmail)) {
             return res.status(401).send({ message: 'Parent or guardian email does not match this student' });
         }
 
         const schoolId = student.school?._id || student.school;
-        let parent = await Parent.findOne({ email: normalizedParentEmail, school: schoolId });
+        let parent = normalizedParentEmail
+            ? await Parent.findOne({ email: normalizedParentEmail, school: schoolId })
+            : await Parent.findOne({ studentId: student._id, school: schoolId });
+        const contactEmail = normalizedParentEmail || validEmails[0];
+
+        if (!contactEmail) {
+            return res.status(400).send({ message: 'A parent or guardian email is required to create the parent account' });
+        }
 
         const createParent = async () => {
-            const hashedPassword = await bcrypt.hash(student.admissionNo, 10);
+            const hashedPassword = await bcrypt.hash(password, 10);
             parent = new Parent({
-                email: normalizedParentEmail,
+                email: contactEmail,
                 password: hashedPassword,
                 name: student.parentName || student.guardianName || student.name || 'Parent/Guardian',
                 phone: student.parentPhone || student.guardianPhone,
@@ -137,22 +126,37 @@ const parentLogIn = async (req, res) => {
         };
 
         if (!parent) {
-            if (password !== student.admissionNo) {
+            const validStudentPassword = await bcrypt.compare(password, student.password);
+            if (!validStudentPassword) {
                 return res.status(401).send({ message: 'Invalid password', role: 'Parent' });
             }
 
             await createParent();
         } else {
-            const validated = await bcrypt.compare(password, parent.password);
-            if (!validated) {
+            const validParentPassword = await bcrypt.compare(password, parent.password);
+            const validStudentPassword = await bcrypt.compare(password, student.password);
+            if (!validParentPassword && !validStudentPassword) {
                 return res.status(401).send({ message: 'Invalid password', role: 'Parent' });
+            }
+
+            // Parent records created by older flows used the admission number
+            // as their initial password. Accept the linked student's current
+            // password for first-time parent access and synchronize the hash.
+            if (!validParentPassword && validStudentPassword) {
+                parent.password = await bcrypt.hash(password, 10);
+                await parent.save();
             }
         }
 
-        if (!parent.studentId.equals(student._id)) {
+        if (parent.studentId && !parent.studentId.equals(student._id)) {
+            return res.status(409).send({ message: 'This parent account is linked to a different student' });
+        }
+        if (!parent.studentId) {
             parent.studentId = student._id;
             await parent.save();
         }
+
+        reconcileStudentFees(student);
 
         const parentData = parent.toObject({ getters: true });
         delete parentData.password;
@@ -171,6 +175,7 @@ const parentLogIn = async (req, res) => {
                 amountPaid: studentObj.amountPaid,
                 balance: studentObj.balance,
                 paymentStatus: studentObj.paymentStatus,
+                paymentHistory: studentObj.paymentHistory || [],
             },
             school: studentObj.school
         });
@@ -196,6 +201,8 @@ const getStudentFeeInfo = async (req, res) => {
         if (!student) {
             return res.status(404).send({ message: 'Student not found' });
         }
+
+        reconcileStudentFees(student);
 
         const studentParentEmail = student.parentEmail?.trim().toLowerCase();
         const studentGuardianEmail = student.guardianEmail?.trim().toLowerCase();
@@ -321,6 +328,7 @@ const getParentStudents = async (req, res) => {
         }
 
         const studentData = students.map((s) => {
+            reconcileStudentFees(s);
             const studentObj = s && typeof s.toObject === 'function' ? s.toObject({ getters: true }) : s;
             const resolvedId = studentObj?._id || studentObj?.id || studentObj?.studentId;
             return {

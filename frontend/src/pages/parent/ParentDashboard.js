@@ -2,13 +2,28 @@ import { API_BASE_URL } from '../../utils/apiConfig';
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { Box, Container, Grid, Paper, Typography, Button, Card, CardContent, LinearProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem, FormControl, InputLabel, FormHelperText } from '@mui/material';
 import { AttachMoney, History, Payment, Refresh } from '@mui/icons-material';
 import axios from 'axios';
+import { authLogout } from '../../redux/userRelated/userSlice';
 
+const normalizeStudentFinance = (record = {}) => {
+    const totalFees = Math.max(Number(record.totalFees) || 0, 0);
+    const amountPaid = Math.max(Number(record.amountPaid) || 0, 0);
+    const balance = Math.max(totalFees - amountPaid, 0);
+    return {
+        ...record,
+        totalFees,
+        amountPaid,
+        balance,
+        paymentStatus: balance === 0 ? 'Completed' : 'Pending',
+    };
+};
 
 const ParentDashboard = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [currentUser, setCurrentUser] = useState(null);
     const [studentInfo, setStudentInfo] = useState(null);
     const [children, setChildren] = useState([]);
@@ -34,13 +49,7 @@ const ParentDashboard = () => {
             );
 
             if (response.data) {
-                const normalizedStudent = {
-                    ...response.data,
-                    totalFees: response.data.totalFees ?? 0,
-                    amountPaid: response.data.amountPaid ?? 0,
-                    balance: response.data.balance ?? (response.data.totalFees ?? 0),
-                    paymentStatus: response.data.paymentStatus || 'Pending',
-                };
+                const normalizedStudent = normalizeStudentFinance(response.data);
                 setStudentInfo(normalizedStudent);
                 const updatedUser = { ...currentUser, student: normalizedStudent };
                 localStorage.setItem('currentUser', JSON.stringify(updatedUser));
@@ -73,13 +82,7 @@ const ParentDashboard = () => {
                 const response = await axios.get(`${API_BASE_URL}/Parent/Students/${encodeURIComponent(userData.email)}`);
                 const studentList = response.data?.value ?? response.data;
                 if (studentList && Array.isArray(studentList)) {
-                    const normalizedChildren = studentList.map((child) => ({
-                        ...child,
-                        totalFees: child.totalFees ?? 0,
-                        amountPaid: child.amountPaid ?? 0,
-                        balance: child.balance ?? (child.totalFees ?? 0),
-                        paymentStatus: child.paymentStatus || 'Pending',
-                    }));
+                    const normalizedChildren = studentList.map(normalizeStudentFinance);
                     setChildren(normalizedChildren);
                     const initialChild = normalizedChildren.find((child) => child.id === userData.student?.id) || normalizedChildren[0];
                     if (initialChild) {
@@ -104,9 +107,7 @@ const ParentDashboard = () => {
     }, [selectedStudentId, currentUser?.email]);
 
     const handleLogout = () => {
-        localStorage.removeItem('user');
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('currentRole');
+        dispatch(authLogout());
         navigate('/Parent/login', { replace: true });
     };
 
@@ -170,12 +171,13 @@ const ParentDashboard = () => {
                 setTransactionId('');
 
                 const updatedUser = { ...currentUser };
-                updatedUser.student = {
+                updatedUser.student = normalizeStudentFinance({
                     ...studentInfo,
                     amountPaid: response.data.amountPaid,
                     balance: response.data.balance,
                     paymentStatus: response.data.paymentStatus,
-                };
+                    totalFees: response.data.totalFees ?? studentInfo.totalFees,
+                });
                 localStorage.setItem('currentUser', JSON.stringify(updatedUser));
                 setCurrentUser(updatedUser);
                 setStudentInfo(updatedUser.student);

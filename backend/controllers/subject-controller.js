@@ -4,6 +4,7 @@ const Teacher = require('../models/teacherSchema.js');
 const Student = require('../models/studentSchema.js');
 const Admin = require('../models/adminSchema.js');
 const { getAdminIdFromReq, verifySchoolId, verifyEntityBelongsToAdminSchool, getRequestUser } = require('../middleware/schoolAccess.js');
+const { teacherHasClass, teacherHasSubject } = require('../utils/teacherAccess');
 
 const subjectCreate = async (req, res) => {
     try {
@@ -84,6 +85,12 @@ const classSubjects = async (req, res) => {
         if (uniqueSchoolIds.length > 0) query.school = { $in: uniqueSchoolIds };
 
         let subjects = await Subject.find(query)
+        if (requestUser?.type === 'teacher') {
+            if (!teacherHasClass(requestUser.user, req.params.id)) {
+                return res.status(403).send({ message: 'Teachers can only view subjects for their assigned class.' });
+            }
+            subjects = subjects.filter((subject) => teacherHasSubject(requestUser.user, subject._id));
+        }
         if (subjects.length > 0) {
             res.send(subjects)
         } else {

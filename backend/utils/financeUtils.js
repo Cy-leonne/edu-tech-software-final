@@ -1,10 +1,48 @@
 
+const normalizePaymentStatus = (status) => {
+  const normalized = String(status || '').toLowerCase();
+  if (['completed', 'success'].includes(normalized)) return 'Completed';
+  if (normalized === 'verified') return 'Verified';
+  if (['failed', 'declined', 'error'].includes(normalized)) return 'Failed';
+  return 'Pending';
+};
+
+const reconcileStudentFees = (student = {}) => {
+  const history = Array.isArray(student.paymentHistory) ? student.paymentHistory : [];
+  const currentPeriod = student.feePeriodKey || 'initial';
+  const totalFees = Math.max(Number(student.totalFees) || 0, 0);
+  let amountPaid = 0;
+
+  history.forEach((payment) => {
+    payment.status = normalizePaymentStatus(payment.status);
+    payment.amount = Number(payment.amount || 0);
+    if ((payment.feePeriodKey || 'initial') === currentPeriod && ['Completed', 'Verified'].includes(payment.status)) {
+      amountPaid += payment.amount;
+    }
+  });
+
+  student.totalFees = totalFees;
+  student.amountPaid = amountPaid;
+  student.balance = Math.max(totalFees - amountPaid, 0);
+  student.paymentStatus = student.balance === 0 ? 'Completed' : 'Pending';
+
+  let runningPaid = 0;
+  history.forEach((payment) => {
+    if ((payment.feePeriodKey || 'initial') === currentPeriod && ['Completed', 'Verified'].includes(payment.status)) {
+      runningPaid += payment.amount;
+      payment.balanceAfter = Math.max(totalFees - runningPaid, 0);
+    }
+  });
+
+  return student;
+};
+
 const applyClassFeeToStudent = (student = {}, classFeeAmount = 0) => {
   const carriedForwardBalance = Number(student.carriedForwardBalance || 0);
   const totalFees = Number(classFeeAmount || 0) + carriedForwardBalance;
   const amountPaid = Number(student.amountPaid || 0);
-  const balance = totalFees - amountPaid;
-  const paymentStatus = balance > 0 ? (student.paymentStatus || 'Pending') : 'Completed';
+  const balance = Math.max(totalFees - amountPaid, 0);
+  const paymentStatus = balance === 0 ? 'Completed' : 'Pending';
 
   return {
     ...student,
@@ -55,6 +93,7 @@ const summarizeFinanceReport = ({ students = [], financeSettings = {} } = {}) =>
 };
 
 module.exports = {
+  reconcileStudentFees,
   applyClassFeeToStudent,
   summarizeFinanceReport,
 };

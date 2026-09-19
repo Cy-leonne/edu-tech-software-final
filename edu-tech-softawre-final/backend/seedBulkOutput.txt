@@ -1,0 +1,113 @@
+
+Connected to MongoDB for bulk seeding.
+
+[EMAIL DEMO] To: parent2ef0-1@test.school
+[EMAIL DEMO] Subject: Attendance and Fees Update
+[EMAIL DEMO] Body: Dear Parent of Daniel Wambui,<br/><br/>Daniel Wambui has a balance of KES 25138.<br/>Attendance update: 10/10 present.<br/><br/>Please contact the school if you have questions.
+[SMS DEMO] To: +254700460001
+[SMS DEMO] Message: Dear Parent of Daniel Wambui,
+
+Daniel Wambui has a balance of KES 25138.
+Attendance update: 10/10 present.
+
+Please contact the school if you have questions.
+
+[EMAIL DEMO] To: parent2ef0-2@test.school
+[EMAIL DEMO] Subject: Attendance and Fees Update
+[EMAIL DEMO] Body: Dear Parent of Daniel Njuguna,<br/><br/>Daniel Njuguna has a balance of KES 21587.<br/>Attendance update: 9/10 present.<br/><br/>Please contact the school if you have questions.
+[SMS DEMO] To: +254700460002
+[SMS DEMO] Message: Dear Parent of Daniel Njuguna,
+
+Daniel Njuguna has a balance of KES 21587.
+Attendance update: 9/10 present.
+
+Please contact the school if you have questions.
+
+[EMAIL DEMO] To: parent2ef0-3@test.school
+[EMAIL DEMO] Subject: Attendance and Fees Update
+[EMAIL DEMO] Body: Dear Parent of Frank Muriuki,<br/><br/>Frank Muriuki has a balance of KES 24092.<br/>Attendance update: 8/10 present.<br/><br/>Please contact the school if you have questions.
+[SMS DEMO] To: +254700460003
+[SMS DEMO] Message: Dear Parent of Frank Muriuki,
+
+Frank Muriuki has a balance of KES 24092.
+Attendance update: 8/10 present.
+
+Please contact the school if you have questions.
+
+[EMAIL DEMO] To: parent2ef0-4@test.school
+[EMAIL DEMO] Subject: Attendance and Fees Update
+[EMAIL DEMO] Body: Dear Parent of Frank Mwangi,<br/><br/>Frank Mwangi has a balance of KES 25343.<br/>Attendance update: 9/10 present.<br/><br/>Please contact the school if you have questions.
+[SMS DEMO] To: +254700460004
+[SMS DEMO] Message: Dear Parent of Frank Mwangi,
+
+Frank Mwangi has a balance of KES 25343.
+Attendance update: 9/10 present.
+
+Please contact the school if you have questions.
+
+[EMAIL DEMO] To: parent2ef0-5@test.school
+[EMAIL DEMO] Subject: Attendance and Fees Update
+[EMAIL DEMO] Body: Dear Parent of Joseph Wanyoike,<br/><br/>Joseph Wanyoike has a balance of KES 24479.<br/>Attendance update: 7/10 present.<br/><br/>Please contact the school if you have questions.
+[SMS DEMO] To: +254700460005
+[SMS DEMO] Message: Dear Parent of Joseph Wanyoike,
+
+Joseph Wanyoike has a balance of KES 24479.
+Attendance update: 7/10 present.
+
+Please contact the school if you have questions.
+
+[EMAIL DEMO] To: parent2ef0-6@test.school
+[EMAIL DEMO] Subject: Attendance and Fees Update
+[EMAIL DEMO] Body: Dear Parent of Frank Mwangi,<br/><br/>Frank Mwangi has a balance of KES 27407.<br/>Attendance update: 8/10 present.<br/><br/>Please contact the school if you have questions.
+[SMS DEMO] To: +254700460006
+[SMS DEMO] Message: Dear Parent of Frank Mwangi,
+
+Frank Mwangi has a balance of KES 27407.
+Attendance update: 8/10 present.
+
+Please contact the school if you have questions.
+
+[EMAIL DEMO] To: parent2ef0-7@test.school
+[EMAIL DEMO] Subject: Attendance and Fees Update
+[EMAIL DEMO] Body: Dear Parent of Esther Olando,<br/><br/>Esther Olando has a balance of KES 10641.<br/>Attendance update: 9/10 present.<br/><br/>Please contact the school if you have questions.
+[SMS DEMO] To: +254700460007
+[SMS DEMO] Message: Dear Parent of Esther Olando,
+
+Esther Olando has a balance of KES 10641.
+Attendance update: 9/10 present.
+
+Please contact the school if you have questions.
+
+[EMAIL DEMO] To: parent2ef0-8@test.school
+[EMAIL DEMO] Subject: Attendance and Fees Update
+[EMAIL DEMO] Body: Dear Parent of Irene Kariuki,<br/><br/>Irene Kariuki has a balance of KES 10950.<br/>Attendance update: 8/10 present.<br/><br/>Please contact the school if you have questions.
+[SMS DEMO] To: +254700460008
+[SMS DEMO] Message: Dear Parent of Irene Kariuki,
+
+Irene Kariuki has a balance of KES 10950.
+Attendance update: 8/10 present.
+
+Please contact the school if you have questions.
+
+[EMAIL DEMO] To: parent2ef0-9@test.school
+[EMAIL DEMO] Subject: Attendance and Fees Update
+[EMAIL DEMO] Body: Dear Parent of Gloria Olando,<br/><br/>Gloria Olando has a balance of KES 17350.<br/>Attendance update: 7/10 present.<br/><br/>Please contact the school if you have questions.
+[SMS DEMO] To: +254700460009
+[SMS DEMO] Message: Dear Parent of Gloria Olando,
+
+Gloria Olando has a balance of KES 17350.
+Attendance update: 7/10 present.
+
+Please contact the school if you have questions.
+
+[EMAIL DEMO] To: parent2ef0-10@test.school
+[EMAIL DEMO] Subject: Attendance and Fees Update
+[EMAIL DEMO] Body: Dear Parent of Gloria Otieno,<br/><br/>Gloria Otieno has a balance of KES 20385.<br/>Attendance update: 5/10 present.<br/><br/>Please contact the school if you have questions.
+[SMS DEMO] To: +254700460010
+[SMS DEMO] Message: Dear Parent of Gloria Otieno,
+
+Gloria Otieno has a balance of KES 20385.
+Attendance update: 5/10 present.
+
+Please contact the school if you have questions.
+Created test school data for Test School 1 (10 students, 3 teachers, 3 classes).

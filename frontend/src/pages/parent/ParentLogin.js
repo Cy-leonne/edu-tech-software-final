@@ -28,8 +28,8 @@ const ParentLogin = () => {
         event.preventDefault();
         setError('');
 
-        if (!admissionNumber || !parentEmail || !password) {
-            setError('Parent email, password, and student admission number are required');
+        if (!admissionNumber || !password) {
+            setError('Student admission number and password are required');
             return;
         }
 
@@ -131,7 +131,6 @@ const ParentLogin = () => {
                             />
                             <TextField
                                 margin="normal"
-                                required
                                 fullWidth
                                 id="email"
                                 label="Parent / Guardian Email Address"
@@ -143,6 +142,7 @@ const ParentLogin = () => {
                                     setParentEmail(e.target.value);
                                     handleInputChange(e);
                                 }}
+                                helperText="Optional after first-time setup"
                             />
                             <TextField
                                 margin="normal"

@@ -75,8 +75,28 @@ const TeacherDashboard = () => {
                         </IconButton>
                     </Toolbar>
                     <Divider />
-                    <List component="nav">
-                        <TeacherSideBar />
+                    <List
+                        component="nav"
+                        sx={{
+                            '& .MuiListItemButton-root': {
+                                minHeight: 48,
+                                px: open ? 2 : 1.5,
+                                justifyContent: open ? 'initial' : 'center',
+                            },
+                            '& .MuiListItemIcon-root': {
+                                minWidth: open ? 40 : 0,
+                                mr: open ? 1 : 0,
+                                justifyContent: 'center',
+                            },
+                            '& .MuiListItemText-root': {
+                                display: open ? 'block' : 'none',
+                            },
+                            '& .MuiListSubheader-root': {
+                                display: open ? 'block' : 'none',
+                            },
+                        }}
+                    >
+                        <TeacherSideBar open={open} />
                     </List>
                 </Drawer>
                 <Box component="main" sx={styles.boxStyled}>

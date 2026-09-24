@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, Button } from '@mui/material';
 import axios from 'axios';
+import { PrintOutlined } from '@mui/icons-material';
 
 
 const ParentTimetable = () => {
@@ -53,12 +54,17 @@ const ParentTimetable = () => {
     }, [currentUser]);
 
     const schedule = timetable?.schedule || [];
+    const handlePrint = () => window.print();
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <style>{'@media print { .timetable-actions { display: none !important; } body { background: #fff; } }'}</style>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h4">Student Timetable</Typography>
-                <Button variant="outlined" onClick={() => navigate('/Parent/dashboard')}>Back to Dashboard</Button>
+                <Box className="timetable-actions" sx={{ display: 'flex', gap: 1 }}>
+                    <Button variant="outlined" startIcon={<PrintOutlined />} onClick={handlePrint}>Download PDF</Button>
+                    <Button variant="outlined" onClick={() => navigate('/Parent/dashboard')}>Back to Dashboard</Button>
+                </Box>
             </Box>
             {loading && <CircularProgress />}
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}

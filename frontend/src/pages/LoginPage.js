@@ -382,12 +382,14 @@ const LoginPage = ({ role }) => {
                                     control={<Checkbox value="remember" color="primary" />}
                                     label="Remember me"
                                 />
-                                <StyledAnchor href="#" onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate(`/${role}/forgot-password`);
-                                }}>
-                                    Forgot password?
-                                </StyledAnchor>
+                                {role !== 'Student' && role !== 'Parent' && (
+                                    <StyledAnchor href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        navigate(`/${role}/forgot-password`);
+                                    }}>
+                                        Forgot password?
+                                    </StyledAnchor>
+                                )}
                             </Grid>
                             <LightPurpleButton
                                 type="submit"
@@ -445,7 +447,13 @@ const LoginPage = ({ role }) => {
                 <CircularProgress color="primary" />
                 Please Wait
             </Backdrop>
-            <Dialog open={showPasswordChangeDialog} onClose={() => setShowPasswordChangeDialog(false)} maxWidth="sm" fullWidth>
+            <Dialog
+                open={showPasswordChangeDialog}
+                onClose={() => {}}
+                disableEscapeKeyDown
+                maxWidth="sm"
+                fullWidth
+            >
                 <DialogTitle>Set a new password</DialogTitle>
                 <DialogContent>
                     <Box component="form" onSubmit={handlePasswordChangeSubmit} sx={{ mt: 1 }}>
@@ -477,7 +485,6 @@ const LoginPage = ({ role }) => {
                             onChange={(e) => setConfirmNewPassword(e.target.value)}
                         />
                         <DialogActions sx={{ px: 0, pt: 2 }}>
-                            <Button onClick={() => setShowPasswordChangeDialog(false)}>Cancel</Button>
                             <LightPurpleButton type="submit" variant="contained" disabled={changePasswordLoader}>
                                 {changePasswordLoader ? <CircularProgress size={24} color="inherit" /> : 'Update Password'}
                             </LightPurpleButton>

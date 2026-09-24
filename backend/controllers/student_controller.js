@@ -328,7 +328,7 @@ const studentRegister = async (req, res) => {
                 school: schoolId,
                 password: hashedPass,
                 role: 'Student',
-                forcePasswordChange: !requestedAdmissionNo && !req.body.password ? true : (!req.body.password ? true : false),
+                forcePasswordChange: true,
         });
 
         const result = await student.save();

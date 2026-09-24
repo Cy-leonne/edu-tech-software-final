@@ -73,6 +73,40 @@ const findPaymentsByCheckoutId = (student, checkoutRequestId) => {
 
 const PAYMENT_FINAL_STATES = ['Completed', 'Verified', 'Failed', 'Cancelled'];
 
+const GRADING_TABLES = {
+    achievement: [
+        { min: 90, grade: 'EE1', level: 'AL8', points: 8, remark: 'Exceeding Expectation' },
+        { min: 75, grade: 'EE2', level: 'AL7', points: 7, remark: 'Exceeding Expectation' },
+        { min: 58, grade: 'ME1', level: 'AL6', points: 6, remark: 'Meeting Expectation' },
+        { min: 41, grade: 'ME2', level: 'AL5', points: 5, remark: 'Meeting Expectation' },
+        { min: 31, grade: 'AE1', level: 'AL4', points: 4, remark: 'Approaching Expectation' },
+        { min: 21, grade: 'AE2', level: 'AL3', points: 3, remark: 'Approaching Expectation' },
+        { min: 11, grade: 'BE1', level: 'AL2', points: 2, remark: 'Below Expectation' },
+        { min: 0, grade: 'BE2', level: 'AL1', points: 1, remark: 'Below Expectation' },
+    ],
+    cdacc: [
+        { min: 80, grade: 'M', level: 'Mastery', points: 4, remark: 'Mastery' },
+        { min: 65, grade: 'P', level: 'Proficient', points: 3, remark: 'Proficient' },
+        { min: 50, grade: 'C', level: 'Competent', points: 2, remark: 'Competent' },
+        { min: 0, grade: 'NYC', level: 'Not Yet Competent', points: 1, remark: 'Not Yet Competent' },
+    ],
+    knec: [
+        { min: 80, grade: '1', level: 'Distinction', points: 1, remark: 'Distinction' },
+        { min: 75, grade: '2', level: 'Distinction', points: 2, remark: 'Distinction' },
+        { min: 70, grade: '3', level: 'Credit', points: 3, remark: 'Credit' },
+        { min: 60, grade: '4', level: 'Credit', points: 4, remark: 'Credit' },
+        { min: 50, grade: '5', level: 'Pass', points: 5, remark: 'Pass' },
+        { min: 40, grade: '6', level: 'Pass', points: 6, remark: 'Pass' },
+        { min: 0, grade: '7', level: 'Fail', points: 7, remark: 'Fail' },
+    ],
+};
+
+const getComputedResult = (result) => {
+    const gradingSystem = GRADING_TABLES[result.gradingSystem] ? result.gradingSystem : 'achievement';
+    const grade = GRADING_TABLES[gradingSystem].find((entry) => Number(result.marksObtained) >= entry.min);
+    return { ...result, gradingSystem, ...grade };
+};
+
 // Parent Login - authenticate with admission number, parent email, and password
 const parentLogIn = async (req, res) => {
     try {
@@ -196,7 +230,8 @@ const getStudentFeeInfo = async (req, res) => {
         }
 
         const student = await Student.findById(studentId)
-            .populate("sclassName", "sclassName");
+            .populate("sclassName", "sclassName")
+            .populate({ path: 'examResult.subName', select: 'subName teacher', populate: { path: 'teacher', select: 'name' } });
 
         if (!student) {
             return res.status(404).send({ message: 'Student not found' });
@@ -214,6 +249,9 @@ const getStudentFeeInfo = async (req, res) => {
             return res.status(403).send({ message: 'Unauthorized access' });
         }
 
+        const examResult = (student.examResult || []).map(getComputedResult);
+        const totalMarks = examResult.reduce((sum, result) => sum + Number(result.marksObtained || 0), 0);
+
         res.send({
             id: student._id || student.id,
             studentId: student._id || student.id,
@@ -226,6 +264,11 @@ const getStudentFeeInfo = async (req, res) => {
             balance: student.balance,
             paymentStatus: student.paymentStatus,
             paymentHistory: student.paymentHistory || [],
+            examResult,
+            reportSummary: {
+                totalMarks,
+                average: examResult.length ? totalMarks / examResult.length : 0,
+            },
         });
     } catch (error) {
         console.error('Get fee info error:', error.message || error);

@@ -72,7 +72,7 @@ const PaymentHistory = () => {
                             variant="outlined"
                             onClick={handlePrint}
                         >
-                            Print
+                            Download PDF
                         </Button>
                     </Box>
 

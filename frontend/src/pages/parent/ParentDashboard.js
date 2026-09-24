@@ -4,9 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Box, Container, Grid, Paper, Typography, Button, Card, CardContent, LinearProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem, FormControl, InputLabel, FormHelperText } from '@mui/material';
-import { AttachMoney, History, Payment, Refresh } from '@mui/icons-material';
+import { AttachMoney, History, Payment, PrintOutlined, Refresh } from '@mui/icons-material';
 import axios from 'axios';
 import { authLogout } from '../../redux/userRelated/userSlice';
+import { calculateGrade, formatGrade, getGradeColor } from '../../utils/gradingSystem';
+import { buildPrintBrandingHtml, printBrandingStyles } from '../../utils/printBranding';
 
 const normalizeStudentFinance = (record = {}) => {
     const totalFees = Math.max(Number(record.totalFees) || 0, 0);
@@ -218,6 +220,52 @@ const ParentDashboard = () => {
     const isFullyPaid = feeDataAvailable ? studentInfo.balance === 0 : false;
     const statusColor = isFullyPaid ? 'success.main' : feeDataAvailable && studentInfo.balance < studentInfo.totalFees / 2 ? 'warning.main' : 'error.main';
     const statusText = feeDataAvailable ? (isFullyPaid ? '✓ Fully Paid' : `Outstanding: KES ${studentInfo.balance}`) : 'Fee details pending';
+    const grades = Array.isArray(studentInfo.examResult) ? studentInfo.examResult : [];
+    const totalMarks = Number(studentInfo.reportSummary?.totalMarks ?? grades.reduce((sum, result) => sum + Number(result.marksObtained || 0), 0));
+    const averageMarks = grades.length ? totalMarks / grades.length : 0;
+    const getSubjectLabel = (result) => typeof result?.subName === 'string'
+        ? result.subName
+        : result?.subName?.subName || 'Unknown Subject';
+    const downloadResults = () => {
+        if (!grades.length) return;
+
+        const rows = grades.map((result) => {
+                const gradeInfo = calculateGrade(result.marksObtained, result.gradingSystem) || result;
+                return `<tr><td>${getSubjectLabel(result)}</td><td>${result.examType === 'END_TERM' ? 'End term' : result.examType || 'Assessment'}</td><td>${result.marksObtained ?? 'N/A'}</td><td>${gradeInfo.grade || 'N/A'}</td><td>${gradeInfo.level || 'N/A'}</td><td>${gradeInfo.remark || 'N/A'}</td></tr>`;
+            }).join('');
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            window.print();
+            return;
+        }
+        let hasPrinted = false;
+        const printReport = () => {
+            if (hasPrinted || printWindow.closed) return;
+            hasPrinted = true;
+            printWindow.focus();
+            printWindow.print();
+            setTimeout(() => printWindow.close(), 100);
+        };
+        printWindow.document.write(`
+            <html><head><title>${studentInfo.name || 'Student'} Results</title><style>
+                ${printBrandingStyles}
+                body { font-family: Arial, sans-serif; padding: 20px; color: #1f2937; }
+                .summary { display: flex; gap: 32px; margin: 20px 0; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #cbd5e1; padding: 9px; text-align: left; }
+                th { background: #f1f5f9; }
+            </style></head><body>
+                ${buildPrintBrandingHtml(currentUser)}
+                <h2>Academic Results - ${studentInfo.name || 'Student'}</h2>
+                <p>Admission No: ${studentInfo.admissionNo || 'N/A'}</p>
+                <div class="summary"><strong>Average: ${averageMarks.toFixed(1)}%</strong><strong>Subjects: ${grades.length}</strong></div>
+                <table><thead><tr><th>Subject</th><th>Assessment</th><th>Marks</th><th>Grade</th><th>Level</th><th>Remark</th></tr></thead><tbody>${rows}</tbody></table>
+            </body></html>
+        `);
+        printWindow.document.close();
+        printWindow.onload = printReport;
+        setTimeout(printReport, 500);
+    };
 
     return (
         <Box sx={{ backgroundColor: '#f5f5f5', minHeight: '100vh', pb: 4 }}>
@@ -364,6 +412,59 @@ const ParentDashboard = () => {
                         </Paper>
                     </Grid>
                 </Grid>
+
+                <Paper sx={{ p: 3, mb: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 1 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Academic Grades</Typography>
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<PrintOutlined />}
+                            onClick={downloadResults}
+                            disabled={!grades.length}
+                        >
+                            Download PDF
+                        </Button>
+                    </Box>
+                    {grades.length === 0 ? (
+                        <Typography color="textSecondary">No grades have been published yet.</Typography>
+                    ) : (
+                        <>
+                            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                                Average: {averageMarks.toFixed(1)}% ({grades.length} subject{grades.length === 1 ? '' : 's'})
+                            </Typography>
+                            <TableContainer>
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                                            <TableCell>Subject</TableCell>
+                                            <TableCell>Assessment</TableCell>
+                                            <TableCell align="right">Marks</TableCell>
+                                            <TableCell>Grade</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {grades.map((result, index) => {
+                                            const gradeInfo = calculateGrade(result.marksObtained, result.gradingSystem) || result;
+                                            return (
+                                                <TableRow key={`${result._id || result.subName || 'result'}-${index}`}>
+                                                    <TableCell>{getSubjectLabel(result)}</TableCell>
+                                                    <TableCell>{result.examType === 'END_TERM' ? 'End term' : result.examType || 'Assessment'}</TableCell>
+                                                    <TableCell align="right">{result.marksObtained ?? 'N/A'}</TableCell>
+                                                    <TableCell>
+                                                        <Typography component="span" sx={{ color: getGradeColor(gradeInfo.grade), fontWeight: 'bold' }}>
+                                                            {formatGrade(gradeInfo)}
+                                                        </Typography>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </>
+                    )}
+                </Paper>
 
                 {/* Action Buttons */}
                 <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 2 }}>

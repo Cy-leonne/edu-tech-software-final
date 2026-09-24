@@ -31,6 +31,7 @@ const SalaryApprovalsPage = () => {
         ? JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || 'null')
         : null;
     const effectiveRole = currentRole || currentUser?.role || storedUser?.role;
+    const effectiveUser = currentUser || storedUser;
     const [approvals, setApprovals] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -40,7 +41,7 @@ const SalaryApprovalsPage = () => {
     const [selectedPaymentIndex, setSelectedPaymentIndex] = useState(null);
     const [approvalNotes, setApprovalNotes] = useState('');
 
-    const schoolValue = currentUser?.school?._id || currentUser?.school || currentUser?.schoolId || currentUser?._id;
+    const schoolValue = effectiveUser?.school?._id || effectiveUser?.school || effectiveUser?.schoolId || effectiveUser?._id;
     const schoolId = schoolValue && typeof schoolValue === 'object'
         ? schoolValue._id || schoolValue.id || schoolValue.schoolId
         : schoolValue;
@@ -49,7 +50,7 @@ const SalaryApprovalsPage = () => {
     const fetchTeachersWithPendingPayments = async () => {
         try {
             setLoading(true);
-            const requestConfig = { headers: { 'x-admin-id': currentUser?._id } };
+            const requestConfig = { headers: { 'x-admin-id': effectiveUser?._id } };
             const [teachersResponse, employeesResponse] = await Promise.all([
                 axios.get(`${API_BASE_URL}/Teachers/${schoolId}`, requestConfig),
                 axios.get(`${API_BASE_URL}/Employee/GetAll?school=${schoolId}`, requestConfig),
@@ -90,10 +91,10 @@ const SalaryApprovalsPage = () => {
     };
 
     useEffect(() => {
-        if (schoolId && currentUser?._id) {
+        if (schoolId && effectiveUser?._id) {
             fetchTeachersWithPendingPayments();
         }
-    }, [currentUser?._id, schoolId]);
+    }, [effectiveUser?._id, schoolId]);
 
     const handleApproveClick = (approval) => {
         setSelectedTeacher(approval);
@@ -114,10 +115,10 @@ const SalaryApprovalsPage = () => {
             await axios.put(
                 endpoint,
                 { 
-                    approvedBy: currentUser?._id,
+                    approvedBy: effectiveUser?._id,
                     notes: approvalNotes 
                 },
-                { headers: { 'x-admin-id': currentUser?._id } }
+                { headers: { 'x-admin-id': effectiveUser?._id } }
             );
 
             setSuccess(`Salary payment approved for ${person.name || person.firstName || person.email}`);
@@ -137,7 +138,7 @@ const SalaryApprovalsPage = () => {
             ? `${API_BASE_URL}/Employee/${approval.person._id}/Payment/${approval.index}/Reject`
             : `${API_BASE_URL}/Teacher/${approval.person._id}/SalaryPayment/${approval.index}/Reject`;
         try {
-            await axios.put(endpoint, { reason }, { headers: { 'x-admin-id': currentUser?._id } });
+            await axios.put(endpoint, { reason }, { headers: { 'x-admin-id': effectiveUser?._id } });
             setSuccess('Payment rejected. School funds were not debited.');
             await fetchTeachersWithPendingPayments();
         } catch (err) {
